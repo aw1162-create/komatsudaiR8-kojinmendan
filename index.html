@@ -8,43 +8,44 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- React 18 & ReactDOM 18 安定版CDN (Babelを不要にして読み込みを最速化) -->
+  <!-- React 18 & ReactDOM 18 安定版CDN (Babel不要の高速・高安定動作構成) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
 
   <style>
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-fade-in {
-      animation: fadeIn 0.25s ease-out forwards;
+      animation: fadeIn 0.2s ease-out forwards;
     }
     @keyframes scaleUp {
-      from { transform: scale(0.95); opacity: 0; }
+      from { transform: scale(0.97); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
     .animate-scale-up {
-      animation: scaleUp 0.15s ease-out forwards;
+      animation: scaleUp 0.12s ease-out forwards;
     }
-    /* 画面全体での余分なスクロールを制限 */
+    /* ウィンドウへの自動調節用スタイル */
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden;
+      width: 100%;
+      overflow: hidden; /* 画面全体のスクロールを完全禁止 */
+      background-color: #f1f5f9;
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 font-sans antialiased">
+<body class="text-slate-900 font-sans antialiased">
 
-  <div id="root" class="h-full flex flex-col"></div>
+  <div id="root" class="h-full flex flex-col overflow-hidden"></div>
 
-  <!-- 標準のJavaScript（Babelに依存せず、あらゆる環境で100%正常に動作するReact 18コード） -->
   <script>
     const { useState, useEffect, createElement: h } = React;
 
-    // --- インラインSVGアイコンコンポーネント ---
+    // --- インラインSVGアイコンコンポーネント (属性指定を純粋なJS仕様に統一) ---
     const Icon = ({ name, className = "w-5 h-5" }) => {
       const icons = {
         Calendar: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
@@ -131,7 +132,6 @@
       '16:05 - 16:20',
     ];
 
-    // 初期メンバーデータ（デフォルトですべて面談不可能「0」に初期化）
     const INITIAL_MEMBERS = [
       {
         id: 'm1',
@@ -159,23 +159,23 @@
       }
     ];
 
-    // 姓名を姓と名で分割し、カード内で2行で表示するヘルパー関数 (文字サイズを少し縮小調整)
+    // 姓名を姓と名で分割し、カード内で2行で表示するヘルパー関数
     const renderSplitName = (fullName) => {
       const parts = fullName.trim().split(/[\s　]+/);
       if (parts.length >= 2) {
-        return h("div", { className: "flex flex-col items-center justify-center leading-tight w-full text-center px-1" },
-          h("span", { className: "text-lg md:text-xl font-black text-slate-900 tracking-wide block truncate max-w-full" }, parts[0]),
-          h("span", { className: "text-sm md:text-base font-bold text-indigo-950 block truncate max-w-full mt-0.5" }, parts[1])
+        return h("div", { className: "flex flex-col items-center justify-center leading-tight w-full text-center" },
+          h("span", { className: "text-base md:text-lg font-black text-slate-900 tracking-wide block truncate max-w-full" }, parts[0]),
+          h("span", { className: "text-xs md:text-sm font-bold text-indigo-950 block truncate max-w-full mt-0.5" }, parts[1])
         );
       }
       if (fullName.length >= 3) {
         const half = Math.ceil(fullName.length / 2);
-        return h("div", { className: "flex flex-col items-center justify-center leading-tight w-full text-center px-1" },
-          h("span", { className: "text-lg md:text-xl font-black text-slate-900 tracking-wide block truncate max-w-full" }, fullName.slice(0, half)),
-          h("span", { className: "text-sm md:text-base font-bold text-indigo-950 block truncate max-w-full mt-0.5" }, fullName.slice(half))
+        return h("div", { className: "flex flex-col items-center justify-center leading-tight w-full text-center" },
+          h("span", { className: "text-base md:text-lg font-black text-slate-900 tracking-wide block truncate max-w-full" }, fullName.slice(0, half)),
+          h("span", { className: "text-xs md:text-sm font-bold text-indigo-950 block truncate max-w-full mt-0.5" }, fullName.slice(half))
         );
       }
-      return h("span", { className: "text-lg md:text-xl font-black text-slate-900 truncate max-w-full block text-center px-1" }, fullName);
+      return h("span", { className: "text-base md:text-lg font-black text-slate-900 truncate max-w-full block text-center" }, fullName);
     };
 
     function App() {
@@ -198,13 +198,9 @@
       const [newMemberName, setNewMemberName] = useState('');
       const [bulkNamesInput, setBulkNamesInput] = useState('');
 
-      const [confirmModal, setConfirmModal] = useState({
-        isOpen: false,
-        title: '',
-        message: '',
-        onConfirm: null
-      });
-
+      // --- 確認ダイアログ・削除用ステート ---
+      const [confirmType, setConfirmType] = useState(null); // 'delete-member' | 'clear-schedule' | 'reset-all' | null
+      const [targetMember, setTargetMember] = useState(null); // { id, name }
       const [toast, setToast] = useState(null);
 
       useEffect(() => {
@@ -242,6 +238,7 @@
         }
       }, [view, members, selectedMemberId]);
 
+      // 矩形ドラッグ範囲選択処理
       useEffect(() => {
         const handleGlobalMouseUp = () => {
           if (paintStart && paintCurrent && selectedMemberId) {
@@ -279,19 +276,51 @@
 
       const showToast = (message, type = 'success') => {
         setToast({ message, type });
-        setTimeout(() => setToast(null), 4000);
+        setTimeout(() => setToast(null), 3500);
       };
 
-      const openConfirm = (title, message, onConfirm) => {
-        setConfirmModal({
-          isOpen: true,
-          title,
-          message,
-          onConfirm: () => {
-            onConfirm();
-            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      // 生徒の削除実行
+      const executeDelete = (id) => {
+        if (!id) return;
+        
+        setMembers(prevMembers => {
+          const nextMembers = prevMembers.filter(m => m.id !== id);
+          if (selectedMemberId === id) {
+            setSelectedMemberId(nextMembers.length > 0 ? nextMembers[0].id : '');
           }
+          return nextMembers;
         });
+
+        setSchedule(prevSchedule => {
+          const nextSchedule = { ...prevSchedule };
+          Object.keys(nextSchedule).forEach(key => {
+            if (nextSchedule[key] === id) { delete nextSchedule[key]; }
+          });
+          return nextSchedule;
+        });
+
+        showToast("生徒を削除しました。", "info");
+        setConfirmType(null);
+        setTargetMember(null);
+      };
+
+      const executeClearSchedule = () => {
+        setSchedule({});
+        showToast("割り当てをリセットしました。");
+        setConfirmType(null);
+      };
+
+      const executeResetAll = () => {
+        setMembers(INITIAL_MEMBERS);
+        setSchedule({});
+        setDays(DEFAULT_DAYS);
+        setDaysInput(DEFAULT_DAYS.join(', '));
+        setTimeSlots(DEFAULT_TIME_SLOTS);
+        setTimeSlotsInput(DEFAULT_TIME_SLOTS.join('\n'));
+        setSelectedMemberId('m1');
+        setView('main');
+        showToast("完全リセットしました。", "info");
+        setConfirmType(null);
       };
 
       const isAvailable = (memberId, day, timeIndex) => {
@@ -365,27 +394,6 @@
         }
         setBulkNamesInput('');
         showToast(`${newMembers.length}名の一括登録が完了しました。`);
-      };
-
-      const handleDeleteMember = (id, name) => {
-        openConfirm(
-          'メンバーの削除',
-          `本当に「${name}」を削除しますか？\n割り当て済みのコマも自動的にクリアされます。`,
-          () => {
-            setMembers(members.filter(m => m.id !== id));
-            const updatedSchedule = { ...schedule };
-            Object.keys(updatedSchedule).forEach(key => {
-              if (updatedSchedule[key] === id) { delete updatedSchedule[key]; }
-            });
-            setSchedule(updatedSchedule);
-
-            if (selectedMemberId === id) {
-              const remaining = members.filter(m => m.id !== id);
-              setSelectedMemberId(remaining.length > 0 ? remaining[0].id : '');
-            }
-            showToast(`「${name}」さんを削除しました。`, 'info');
-          }
-        );
       };
 
       const isInPaintRange = (dayIdx, timeIdx) => {
@@ -473,26 +481,6 @@
         });
       };
 
-      const handleClearSchedule = () => {
-        openConfirm('表のクリア', '現在の割り当てをすべて削除し、白紙に戻しますか？', () => {
-          setSchedule({});
-          showToast('割り当てをリセットしました。');
-        });
-      };
-
-      const handleResetAll = () => {
-        openConfirm('データの完全初期化', '登録名簿およびすべてのスケジュール設定を初期状態に戻しますか？', () => {
-          setMembers(INITIAL_MEMBERS);
-          setSchedule({});
-          setDays(DEFAULT_DAYS);
-          setDaysInput(DEFAULT_DAYS.join(', '));
-          setTimeSlots(DEFAULT_TIME_SLOTS);
-          setTimeSlotsInput(DEFAULT_TIME_SLOTS.join('\n'));
-          setView('main');
-          showToast('完全リセットしました。');
-        });
-      };
-
       const handleAutoSchedule = () => {
         const newSched = {};
         const sortedMembers = [...members].map(m => {
@@ -531,80 +519,81 @@
         return members.filter(m => !assignedIds.has(m.id));
       };
 
-      return h("div", { className: "h-screen bg-slate-100 text-slate-900 flex flex-col overflow-hidden text-base md:text-lg selection:bg-indigo-500 selection:text-white" },
-        // ヘッダー (コンパクト化)
-        h("header", { className: "bg-white border-b-2 border-slate-300 z-20 shadow-sm flex-shrink-0" },
-          h("div", { className: "max-w-[98%] xl:max-w-[1700px] mx-auto px-4 py-2 flex flex-col gap-2" },
-            h("div", { className: "flex flex-col md:flex-row items-center justify-between gap-2 border-b border-slate-100 pb-1" },
+      return h("div", { className: "h-screen bg-slate-100 text-slate-900 flex flex-col overflow-hidden text-sm md:text-base selection:bg-indigo-500 selection:text-white relative" },
+        // ヘッダー
+        h("header", { className: "bg-white border-b-2 border-slate-300 z-20 shadow-xs flex-shrink-0" },
+          h("div", { className: "max-w-[99%] xl:max-w-[1750px] mx-auto px-4 py-1.5 flex flex-col gap-1" },
+            h("div", { className: "flex flex-col md:flex-row items-center justify-between gap-1 border-b border-slate-100 pb-1" },
               h("div", { className: "flex items-center gap-2" },
-                h("div", { className: "bg-indigo-600 text-white p-1.5 rounded-lg shadow-sm" }, h(Icon, { name: "Calendar", className: "w-6 h-6" })),
+                h("div", { className: "bg-indigo-600 text-white p-1 rounded" }, h(Icon, { name: "Calendar", className: "w-5 h-5" })),
                 h("div", {},
-                  h("h1", { className: "text-xl md:text-2xl font-black text-slate-900 tracking-tight" }, "小松台小R8個人面談調整アプリ"),
-                  h("p", { className: "text-xs md:text-sm text-slate-500 font-bold" }, "ドラッグ＆ドロップ ＆ 矩形範囲一括選択 ＆ 最適自動調整")
+                  h("h1", { className: "text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none" }, "小松台小R8個人面談調整アプリ"),
+                  h("p", { className: "text-[10px] md:text-xs text-slate-500 font-bold mt-0.5" }, "ドラッグ＆ドロップ ＆ 矩形範囲一括選択 ＆ 最適自動調整")
                 )
               ),
-              h("div", { className: "text-xs font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200" }, "データ自動セーブ機能稼働中")
+              h("div", { className: "text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200" }, "データ自動セーブ機能稼働中")
             ),
-            h("div", { className: "flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200" },
-              h("div", { className: "flex bg-slate-200 p-0.5 rounded-lg" },
+            h("div", { className: "flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-1 rounded-lg border border-slate-200" },
+              h("div", { className: "flex bg-slate-200 p-0.5 rounded" },
                 h("button", {
                   onClick: () => setView('main'),
-                  className: `flex items-center gap-1.5 px-4 py-1.5 rounded-md font-extrabold text-sm md:text-base transition-all duration-150 ${view === 'main' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-700 hover:text-slate-950'}`
-                }, h(Icon, { name: "Calendar", className: "w-4 h-4" }), "メイン調整表"),
+                  className: `flex items-center gap-1.5 px-3 py-1.5 rounded font-extrabold text-xs md:text-sm transition-all duration-150 ${view === 'main' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-700 hover:text-slate-950'}`
+                }, h(Icon, { name: "Calendar", className: "w-3.5 h-3.5" }), "メイン調整表"),
                 h("button", {
                   onClick: () => setView('settings'),
-                  className: `flex items-center gap-1.5 px-4 py-1.5 rounded-md font-extrabold text-sm md:text-base transition-all duration-150 ${view === 'settings' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-700 hover:text-slate-950'}`
-                }, h(Icon, { name: "Users", className: "w-4 h-4" }), "メンバー設定・登録")
+                  className: `flex items-center gap-1.5 px-3 py-1.5 rounded font-extrabold text-xs md:text-sm transition-all duration-150 ${view === 'settings' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-700 hover:text-slate-950'}`
+                }, h(Icon, { name: "Users", className: "w-3.5 h-3.5" }), "メンバー設定・登録")
               ),
-              h("div", { className: "flex items-center gap-2" },
+              h("div", { className: "flex items-center gap-1.5" },
                 h("button", {
                   onClick: () => setView('axis-config'),
-                  className: `flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-sm border-2 transition-all ${view === 'axis-config' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'}`
-                }, h(Icon, { name: "Settings", className: "w-4 h-4 text-indigo-600" }), "軸の設定"),
+                  className: `flex items-center gap-1 px-2.5 py-1.5 rounded font-bold text-xs border-2 transition-all ${view === 'axis-config' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'}`
+                }, h(Icon, { name: "Settings", className: "w-3.5 h-3.5 text-indigo-600" }), "軸の設定"),
                 h("button", {
-                  onClick: handleResetAll,
-                  className: "flex items-center gap-1 px-3 py-1.5 bg-rose-50 border-2 border-rose-200 hover:bg-rose-100 text-rose-700 rounded-lg font-bold text-sm transition-colors"
-                }, h(Icon, { name: "RotateCcw", className: "w-4 h-4" }), "全リセット")
+                  onClick: () => setConfirmType('reset-all'),
+                  className: "flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 border-2 border-rose-200 hover:bg-rose-100 text-rose-700 rounded font-bold text-xs transition-colors"
+                }, h(Icon, { name: "RotateCcw", className: "w-3.5 h-3.5" }), "全リセット")
               )
             )
           )
         ),
-        // メインコンテンツ (スクロールを局所化してはみ出しを防止)
-        h("main", { className: "flex-1 max-w-[98%] xl:max-w-[1700px] w-full mx-auto p-3 overflow-hidden flex flex-col" },
-          view === 'main' && h("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch h-full overflow-hidden" },
-            // 左側：2次元スケジュール表 (高さをコンテナ内に固定して個別スクロール)
-            h("div", { className: "lg:col-span-9 bg-white rounded-2xl border-2 border-slate-200 shadow-md overflow-hidden flex flex-col h-full" },
-              h("div", { className: "p-4 bg-slate-50 border-b-2 border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-shrink-0" },
+        
+        // メインコンテンツ (スクロールバーを排除するグリッドコンテナ)
+        h("main", { className: "flex-1 max-w-[99%] xl:max-w-[1750px] w-full mx-auto p-2 overflow-hidden flex flex-col min-h-0" },
+          view === 'main' && h("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-2 items-stretch h-full overflow-hidden min-h-0" },
+            // 左側：2次元スケジュール表
+            h("div", { className: "lg:col-span-9 bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden flex flex-col h-full min-h-0" },
+              h("div", { className: "p-3 bg-slate-50 border-b-2 border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 flex-shrink-0" },
                 h("div", {},
-                  h("h2", { className: "text-lg md:text-xl font-extrabold text-slate-900 flex items-center gap-2" }, h(Icon, { name: "Calendar", className: "w-5 h-5 text-indigo-600" }), "日程割り当てグリッド"),
-                  h("p", { className: "text-xs md:text-sm text-slate-600 mt-0.5 font-semibold" }, "名簿から名前をドラッグ＆ドロップ。")
+                  h("h2", { className: "text-sm md:text-base font-extrabold text-slate-900 flex items-center gap-1.5" }, "日程割り当てグリッド"),
+                  h("p", { className: "text-[10px] md:text-xs text-slate-600 font-semibold" }, "名簿から名前をドラッグ＆ドロップ。希望は緑色、不可は赤色に光ります。")
                 ),
-                h("div", { className: "flex gap-2 w-full md:w-auto" },
+                h("div", { className: "flex gap-2 w-full md:w-auto text-xs" },
                   h("button", {
                     onClick: handleAutoSchedule,
-                    className: "flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-sm font-black hover:from-indigo-700 hover:to-violet-700 shadow-sm transition-all active:scale-95"
-                  }, h(Icon, { name: "Sparkles", className: "w-4 h-4" }), "AI自動日程調整"),
+                    className: "flex-1 md:flex-none flex items-center justify-center gap-1 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg font-black hover:from-indigo-700 hover:to-violet-700 shadow-xs transition-all active:scale-95"
+                  }, h(Icon, { name: "Sparkles", className: "w-3.5 h-3.5" }), "AI自動面談調整"),
                   h("button", {
-                    onClick: handleClearSchedule,
-                    className: "px-4 py-2 border-2 border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl text-xs md:text-sm font-bold transition-colors"
+                    onClick: () => setConfirmType('clear-schedule'),
+                    className: "px-2.5 py-1.5 border-2 border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg font-bold transition-colors"
                   }, "表をクリア")
                 )
               ),
-              // テーブルエリア (縦横に安全にスクロール)
-              h("div", { className: "flex-1 overflow-auto bg-slate-50/50" },
-                h("table", { className: "w-full min-w-[1050px] border-collapse table-fixed" },
-                  h("thead", { className: "sticky top-0 z-10 bg-slate-200" },
-                    h("tr", {},
-                      h("th", { className: "w-[12%] p-2 text-center text-xs md:text-sm font-black text-slate-600 border-b-2 border-slate-300" }, "時間 / 日程"),
-                      days.map(day => h("th", { key: day, className: "w-[14.6%] p-2 text-center text-lg md:text-xl font-black text-slate-800 border-b-2 border-slate-300 border-l border-slate-300" }, day))
+              // テーブル全体を1ウィンドウに完全に収める設計
+              h("div", { className: "flex-1 overflow-hidden flex flex-col h-full" },
+                h("table", { className: "w-full min-w-[1000px] border-collapse table-fixed h-full flex flex-col" },
+                  h("thead", { className: "bg-slate-200 flex-shrink-0" },
+                    h("tr", { className: "flex w-full" },
+                      h("th", { className: "w-[12%] p-2 text-center text-[11px] font-black text-slate-600 border-b border-slate-350" }, "時間 / 日程"),
+                      days.map(day => h("th", { key: day, className: "flex-1 p-2 text-center text-sm md:text-base font-black text-slate-800 border-b border-slate-350 border-l border-slate-200" }, day))
                     )
                   ),
-                  h("tbody", {},
-                    timeSlots.map((timeSlot, timeIdx) => h("tr", { key: timeSlot, className: "hover:bg-slate-50/40 transition-colors" },
-                      h("td", { className: "p-2 text-center border-b border-slate-200 bg-slate-50/30" },
-                        h("div", { className: "flex flex-col items-center justify-center gap-0.5" },
-                          h(Icon, { name: "Clock", className: "w-4 h-4 text-slate-400" }),
-                          h("span", { className: "text-xs font-bold text-slate-700" }, timeSlot)
+                  h("tbody", { className: "flex-1 flex flex-col min-h-0 bg-slate-50/50" },
+                    timeSlots.map((timeSlot, timeIdx) => h("tr", { key: timeSlot, className: "hover:bg-slate-50/40 transition-colors flex-1 flex w-full border-b border-slate-200 min-h-0" },
+                      h("td", { className: "w-[12%] p-1 text-center bg-slate-50/30 flex items-center justify-center border-r border-slate-100 min-h-0" },
+                        h("div", { className: "flex flex-col items-center justify-center" },
+                          h(Icon, { name: "Clock", className: "w-3.5 h-3.5 text-slate-400" }),
+                          h("span", { className: "text-[10px] md:text-xs font-bold text-slate-700 mt-0.5" }, timeSlot)
                         )
                       ),
                       days.map(day => {
@@ -618,25 +607,24 @@
                           key: day,
                           onDragOver: (e) => e.preventDefault(),
                           onDrop: () => handleDrop(day, timeIdx),
-                          // 高さをh-32(128px)からh-[90px]に抑えてコンパクト化
-                          className: `p-1 border-b border-l border-slate-200 transition-all duration-150 h-[90px] relative ${highlightClass}`
+                          className: `flex-1 p-0.5 border-l border-slate-200 transition-all duration-150 relative h-full flex items-stretch min-h-0 ${highlightClass}`
                         },
-                          h("div", { className: "w-full h-full flex flex-col justify-between rounded-lg group overflow-hidden" },
+                          h("div", { className: "w-full h-full flex flex-col justify-between rounded-md group overflow-hidden p-0.5" },
                             assignedMember ? h("div", {
                               draggable: true,
                               onDragStart: () => handleDragStart(assignedMember.id, { type: 'grid', day, timeIndex: timeIdx }),
-                              className: `w-full h-full p-1 rounded-lg flex items-center justify-center relative cursor-grab active:cursor-grabbing shadow-xs border-2 transition-all ${hasError ? 'bg-rose-100 border-rose-500 text-rose-900 font-black' : 'bg-indigo-50 border-indigo-300 text-indigo-900 font-extrabold hover:bg-indigo-100'}`
+                              className: `w-full h-full p-1 rounded-md flex items-center justify-center relative cursor-grab active:cursor-grabbing shadow-xs border-2 transition-all ${hasError ? 'bg-rose-100 border-rose-500 text-rose-900 font-black' : 'bg-indigo-50 border-indigo-300 text-indigo-900 font-extrabold hover:bg-indigo-100'}`
                             },
                               h("div", { className: "w-full" }, renderSplitName(assignedMember.name)),
                               h("div", { className: "absolute top-0.5 right-0.5 flex gap-0.5" },
-                                hasError && h("span", { className: "bg-rose-500 text-white p-0.5 rounded-full", title: "不可の時間帯に配置されています！" }, h(Icon, { name: "AlertCircle", className: "w-3 h-3" })),
+                                hasError && h("span", { className: "bg-rose-500 text-white p-0.5 rounded-full", title: "不可の時間帯に配置されています！" }, h(Icon, { name: "AlertCircle", className: "w-2.5 h-2.5" })),
                                 h("button", {
                                   onClick: () => handleRemoveFromSchedule(day, timeIdx),
                                   className: "text-slate-400 hover:text-rose-600 p-0.5 rounded-full hover:bg-white bg-white/70"
-                                }, h(Icon, { name: "X", className: "w-3.5 h-3.5" }))
+                                }, h(Icon, { name: "X", className: "w-3 h-3" }))
                               )
-                            ) : h("div", { className: "w-full h-full flex items-center justify-center border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/25 rounded-lg transition-colors" },
-                              h("span", { className: "text-xs text-slate-300 font-bold" }, "空き")
+                            ) : h("div", { className: "w-full h-full flex items-center justify-center border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/25 rounded-md transition-colors" },
+                              h("span", { className: "text-[10px] text-slate-350 font-bold" }, "空き")
                             )
                           )
                         );
@@ -646,37 +634,58 @@
                 )
               )
             ),
-            // 右カラム名簿 (個別スクロール)
-            h("div", { className: "lg:col-span-3 flex flex-col h-full overflow-hidden gap-3" },
-              h("div", { className: "bg-white rounded-2xl border-2 border-slate-200 shadow-md p-4 flex flex-col flex-1 overflow-hidden" },
-                h("div", { className: "flex items-center justify-between mb-2 pb-2 border-b border-slate-100 flex-shrink-0" },
-                  h("h3", { className: "text-base font-black text-slate-800 flex items-center gap-1.5" }, h(Icon, { name: "Users", className: "w-5 h-5 text-indigo-600" }), "メンバー名簿"),
-                  h("span", { className: "bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-xs font-black" }, `${members.length}名`)
+            
+            // 右カラム名簿
+            h("div", { className: "lg:col-span-3 flex flex-col h-full overflow-hidden gap-2" },
+              h("div", { className: "bg-white rounded-xl border-2 border-slate-200 shadow-sm p-3 flex flex-col flex-1 overflow-hidden min-h-0" },
+                h("div", { className: "flex items-center justify-between mb-2 pb-1.5 border-b border-slate-100 flex-shrink-0" },
+                  h("h3", { className: "text-xs md:text-sm font-black text-slate-800 flex items-center gap-1" }, h(Icon, { name: "Users", className: "w-4 h-4 text-indigo-600" }), "メンバー名簿"),
+                  h("span", { className: "bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-black" }, `${members.length}名`)
                 ),
-                // 名簿の内側だけを安全にスクロール
-                h("div", { className: "flex-1 overflow-y-auto pr-1 space-y-4" },
+                h("div", { className: "flex-1 overflow-y-auto pr-0.5 space-y-3 min-h-0" },
                   h("div", {},
-                    h("h4", { className: "text-xs font-black text-slate-400 uppercase tracking-wider mb-2" }, "未配置"),
-                    getUnassignedMembers().length === 0 ? h("p", { className: "text-xs text-slate-400 bg-slate-50 p-3 rounded-xl border border-dashed text-center font-bold" }, "全員配置完了 🎉") :
-                      h("div", { className: "space-y-1.5" },
+                    h("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1" }, "未配置"),
+                    getUnassignedMembers().length === 0 ? h("p", { className: "text-[10px] text-slate-400 bg-slate-50 p-2 rounded border border-dashed text-center font-bold" }, "全員配置完了 🎉") :
+                      h("div", { className: "space-y-1" },
                         getUnassignedMembers().map(member => h("div", {
                           key: member.id,
                           draggable: true,
                           onDragStart: () => handleDragStart(member.id, { type: 'list' }),
-                          className: "p-2.5 bg-white border border-slate-200 text-slate-800 rounded-xl hover:border-indigo-400 hover:shadow-xs cursor-grab active:cursor-grabbing flex items-center justify-between group transition-all"
+                          className: "p-1.5 md:p-2 bg-white border border-slate-250 text-slate-800 rounded-lg hover:border-indigo-400 flex items-center justify-between group cursor-grab active:cursor-grabbing text-xs md:text-sm"
                         },
-                          h("span", { className: "text-base font-extrabold" }, member.name),
-                          h("span", { className: "text-xs text-indigo-500 font-bold group-hover:translate-x-0.5 transition-transform flex items-center" }, "配置する", h(Icon, { name: "ChevronRight", className: "w-3 h-3 ml-0.5" }))
+                          h("div", { className: "flex items-center gap-1.5 overflow-hidden" },
+                            // 個別削除ボタンをメインの名簿にも設置
+                            h("button", {
+                              onClick: (e) => {
+                                e.stopPropagation();
+                                setTargetMember({ id: member.id, name: member.name });
+                                setConfirmType('delete-member');
+                              },
+                              className: "text-slate-400 hover:text-rose-600 p-0.5 rounded-md hover:bg-slate-100 transition-colors flex-shrink-0"
+                            }, h(Icon, { name: "Trash2", className: "w-3.5 h-3.5" })),
+                            h("span", { className: "font-black truncate" }, member.name)
+                          ),
+                          h("span", { className: "text-[10px] text-indigo-500 font-bold group-hover:translate-x-0.5 transition-transform flex items-center flex-shrink-0" }, "配置する", h(Icon, { name: "ChevronRight", className: "w-2.5 h-2.5 ml-0.5" }))
                         ))
                       )
                   ),
                   h("div", {},
-                    h("h4", { className: "text-xs font-black text-slate-400 uppercase tracking-wider mb-2" }, "配置済み"),
-                    members.filter(m => !getUnassignedMembers().some(um => um.id === m.id)).length === 0 ? h("p", { className: "text-xs text-slate-400 bg-slate-50 p-3 rounded-lg text-center font-bold" }, "未配置") :
-                      h("div", { className: "space-y-1.5 opacity-65" },
-                        members.filter(m => !getUnassignedMembers().some(um => um.id === m.id)).map(member => h("div", { key: member.id, className: "p-2 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg flex items-center justify-between text-sm" },
-                          h("span", { className: "font-bold" }, member.name),
-                          h("span", { className: "text-xs text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-black" }, "配置済")
+                    h("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1" }, "配置済み"),
+                    members.filter(m => !getUnassignedMembers().some(um => um.id === m.id)).length === 0 ? h("p", { className: "text-[10px] text-slate-400 bg-slate-50 p-2 rounded text-center font-bold" }, "未配置") :
+                      h("div", { className: "space-y-1 opacity-65" },
+                        members.filter(m => !getUnassignedMembers().some(um => um.id === m.id)).map(member => h("div", { key: member.id, className: "p-1.5 bg-slate-50 border border-slate-200 text-slate-600 rounded flex items-center justify-between text-xs" },
+                          h("div", { className: "flex items-center gap-1.5 overflow-hidden" },
+                            h("button", {
+                              onClick: (e) => {
+                                e.stopPropagation();
+                                setTargetMember({ id: member.id, name: member.name });
+                                setConfirmType('delete-member');
+                              },
+                              className: "text-slate-400 hover:text-rose-600 p-0.5 rounded hover:bg-slate-200 transition-colors flex-shrink-0"
+                            }, h(Icon, { name: "Trash2", className: "w-3.5 h-3.5" })),
+                            h("span", { className: "font-bold truncate" }, member.name)
+                          ),
+                          h("span", { className: "text-[9px] text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded font-black flex-shrink-0" }, "配置済")
                         ))
                       )
                   )
@@ -685,99 +694,102 @@
               draggingMemberId && dragSource?.type === 'grid' && h("div", {
                 onDragOver: (e) => e.preventDefault(),
                 onDrop: () => handleRemoveFromSchedule(dragSource.day, dragSource.timeIndex),
-                className: "bg-rose-50 border-2 border-dashed border-rose-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-1 text-rose-700 shadow-sm flex-shrink-0"
-              }, h(Icon, { name: "Trash2", className: "w-6 h-6 text-rose-500" }), h("span", { className: "text-sm font-black" }, "ドロップで配置解除"))
+                className: "bg-rose-50 border-2 border-dashed border-rose-300 p-3 rounded-xl flex flex-col items-center justify-center gap-0.5 text-rose-700 shadow-xs flex-shrink-0 text-xs font-black"
+              }, h(Icon, { name: "Trash2", className: "w-5 h-5 text-rose-500" }), h("span", {}, "ドロップで配置解除"))
             )
           ),
-          view === 'settings' && h("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch h-full overflow-hidden" },
-            // コピペ & 名簿 (個別スクロール)
-            h("div", { className: "lg:col-span-4 flex flex-col gap-4 h-full overflow-hidden" },
-              h("div", { className: "bg-white rounded-2xl border-2 border-slate-200 shadow-md p-4 flex flex-col flex-1 overflow-hidden" },
-                h("h3", { className: "text-base font-black text-slate-900 flex items-center gap-1.5 pb-2 border-b mb-3" }, h(Icon, { name: "ClipboardList", className: "w-5 h-5 text-indigo-600" }), "一括コピペ登録"),
+          
+          // --- ビュー2: 設定画面 (コピペ & 矩形ドラッグ) ---
+          view === 'settings' && h("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-2 items-stretch h-full overflow-hidden min-h-0" },
+            // コピペ & 名簿
+            h("div", { className: "lg:col-span-4 flex flex-col gap-2 h-full overflow-hidden" },
+              h("div", { className: "bg-white rounded-xl border-2 border-slate-200 shadow-sm p-3.5 flex flex-col flex-1 overflow-hidden" },
+                h("h3", { className: "text-sm font-black text-slate-900 flex items-center gap-1 pb-1 border-b mb-2 flex-shrink-0" }, h(Icon, { name: "ClipboardList", className: "w-4 h-4 text-indigo-600" }), "一括コピペ登録"),
                 h("form", {
                   onSubmit: handleBulkAddMembers,
                   className: "flex flex-col flex-1 overflow-hidden"
                 },
                   h("div", { className: "flex-1 overflow-hidden flex flex-col" },
-                    h("label", { className: "block text-xs font-black text-slate-500 mb-1" }, "名前リスト（1行に1人、またはカンマ区切り）"),
+                    h("label", { className: "block text-[10px] font-black text-slate-500 mb-0.5" }, "名前リスト（1行に1人、またはカンマ区切り）"),
                     h("textarea", {
                       rows: "3",
                       placeholder: "小松 太郎\n宮崎 花子\n日向 一郎",
                       value: bulkNamesInput,
                       onChange: (e) => setBulkNamesInput(e.target.value),
-                      className: "flex-1 w-full px-3 py-2 text-base bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-all font-bold resize-none min-h-[60px]"
+                      className: "flex-1 w-full px-2.5 py-1.5 text-sm bg-slate-50 border border-slate-350 rounded-lg focus:outline-none focus:border-indigo-500 font-bold resize-none min-h-[50px]"
                     })
                   ),
-                  h("button", { type: "submit", className: "w-full py-2.5 mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl text-sm transition-colors flex items-center justify-center gap-1" }, h(Icon, { name: "UserPlus", className: "w-4 h-4" }), "上記の名前を一括追加する")
+                  h("button", { type: "submit", className: "w-full py-2 mt-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-lg text-xs transition-colors flex items-center justify-center gap-1 flex-shrink-0 shadow-xs" }, h(Icon, { name: "UserPlus", className: "w-3.5 h-3.5" }), "上記の名前を一括追加する")
                 )
               ),
-              h("div", { className: "bg-white rounded-2xl border-2 border-slate-200 shadow-md p-4 flex flex-col flex-1 overflow-hidden" },
-                h("h3", { className: "text-base font-black text-slate-900 mb-2" }, "個別追加・名簿選択"),
-                h("form", { onSubmit: handleAddMember, className: "mb-3 flex gap-2" },
+              h("div", { className: "bg-white rounded-xl border-2 border-slate-200 shadow-sm p-3.5 flex flex-col flex-1 overflow-hidden" },
+                h("h3", { className: "text-sm font-black text-slate-900 mb-1.5 flex-shrink-0" }, "個別追加・名簿選択"),
+                h("form", { onSubmit: handleAddMember, className: "mb-2 flex gap-1.5 flex-shrink-0" },
                   h("input", {
                     type: "text",
                     placeholder: "氏名を入力...",
                     value: newMemberName,
                     onChange: (e) => setNewMemberName(e.target.value),
-                    className: "flex-1 px-3 py-2 text-base bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-bold"
+                    className: "flex-1 px-2.5 py-1.5 text-sm bg-slate-50 border border-slate-350 rounded-lg focus:outline-none focus:border-indigo-500 font-bold"
                   }),
-                  // 「追加」ボタンの見切れを完全に調整。paddingと文字の余白を制御
-                  h("button", { type: "submit", className: "px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-xl text-sm transition-colors flex-shrink-0" }, "追加")
+                  h("button", { type: "submit", className: "px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-lg text-xs flex-shrink-0 transition-colors" }, "追加")
                 ),
-                h("div", { className: "flex-1 overflow-y-auto pr-1 space-y-1.5" },
+                h("div", { className: "flex-1 overflow-y-auto pr-0.5 space-y-1" },
                   members.map(member => h("div", {
                     key: member.id,
                     onClick: () => setSelectedMemberId(member.id),
-                    className: `p-3 rounded-xl cursor-pointer transition-all flex items-center justify-between border-2 ${selectedMemberId === member.id ? 'bg-indigo-50 border-indigo-500 text-indigo-900 font-black' : 'bg-white border-transparent text-slate-700 hover:bg-slate-50'}`
+                    className: `p-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-between border ${selectedMemberId === member.id ? 'bg-indigo-50 border-indigo-400 text-indigo-900 font-black' : 'bg-white border-transparent text-slate-700 hover:bg-slate-50'} text-sm`
                   },
-                    h("span", { className: "text-base truncate" }, member.name),
-                    h("div", { className: "flex items-center gap-1.5" },
-                      Object.values(schedule).includes(member.id) && h("span", { className: "bg-indigo-100 text-indigo-800 text-xs px-1.5 py-0.5 rounded font-black" }, "配置中"),
+                    h("span", { className: "font-black truncate" }, member.name),
+                    h("div", { className: "flex items-center gap-1 flex-shrink-0" },
+                      Object.values(schedule).includes(member.id) && h("span", { className: "bg-indigo-100 text-indigo-800 text-[9px] px-1 py-0.5 rounded font-black" }, "配置中"),
                       h("button", {
-                        onClick: (e) => { e.stopPropagation(); handleDeleteMember(member.id, member.name); },
-                        className: "text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-white"
-                      }, h(Icon, { name: "Trash2", className: "w-4 h-4" }))
+                        onClick: (e) => { 
+                          e.stopPropagation(); 
+                          setTargetMember({ id: member.id, name: member.name });
+                          setConfirmType('delete-member');
+                        },
+                        className: "text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-white transition-colors"
+                      }, h(Icon, { name: "Trash2", className: "w-3.5 h-3.5" }))
                     )
                   ))
                 )
               )
             ),
-            // 希望日程設定 (個別スクロール)
-            h("div", { className: "lg:col-span-8 bg-white rounded-3xl border-2 border-slate-200 shadow-md overflow-hidden flex flex-col h-full" },
+            // 希望日程設定 (ウィンドウ高さに連動自動フィット)
+            h("div", { className: "lg:col-span-8 bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden flex flex-col h-full min-h-0" },
               selectedMemberId ? (() => {
                 const currentMember = members.find(m => m.id === selectedMemberId);
                 if (!currentMember) return null;
 
                 return h("div", { className: "flex flex-col h-full overflow-hidden" },
-                  h("div", { className: "p-4 bg-indigo-50/70 border-b-2 border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 flex-shrink-0" },
+                  h("div", { className: "p-3 bg-indigo-50/70 border-b-2 border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 flex-shrink-0" },
                     h("div", {},
-                      h("span", { className: "text-[10px] font-black text-indigo-700 uppercase tracking-widest block" }, "MEMBER AVAILABILITY"),
-                      h("h3", { className: "text-xl font-black text-slate-900" }, `${currentMember.name} の面談可能日程設定`)
+                      h("span", { className: "text-[9px] font-black text-indigo-700 uppercase tracking-widest block leading-none" }, "MEMBER AVAILABILITY"),
+                      h("h3", { className: "text-base font-black text-slate-900 mt-0.5" }, `${currentMember.name} の面談可能日程設定`)
                     ),
                     h("div", { className: "flex gap-1.5" },
-                      h("button", { onClick: () => setAllAvailability(1), className: "px-3 py-1.5 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold flex items-center gap-1" }, h(Icon, { name: "Check", className: "w-3.5 h-3.5 text-emerald-600" }), "すべて可能"),
-                      h("button", { onClick: () => setAllAvailability(0), className: "px-3 py-1.5 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold flex items-center gap-1" }, h(Icon, { name: "X", className: "w-3.5 h-3.5 text-rose-600" }), "すべて不可")
+                      h("button", { onClick: () => setAllAvailability(1), className: "px-2.5 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded text-xs font-bold flex items-center gap-0.5" }, h(Icon, { name: "Check", className: "w-3 h-3 text-emerald-600" }), "すべて可能"),
+                      h("button", { onClick: () => setAllAvailability(0), className: "px-2.5 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded text-xs font-bold flex items-center gap-0.5" }, h(Icon, { name: "X", className: "w-3 h-3 text-rose-600" }), "すべて不可")
                     )
                   ),
-                  // 四角形ドラッグガイド
-                  h("div", { className: "p-3 bg-amber-50 border-b border-amber-100 text-xs text-amber-900 font-bold flex items-start gap-2 flex-shrink-0" },
-                    h(Icon, { name: "HelpCircle", className: "w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" }),
-                    h("div", {},
-                      h("strong", {}, "四角形でドラッグ範囲選択："), "クリックしたまま対角線にドラッグで一括編集。"
-                    )
+                  h("div", { className: "p-2 bg-amber-50 border-b border-amber-100 text-[10px] text-amber-900 font-bold flex items-center gap-1.5 flex-shrink-0" },
+                    h(Icon, { name: "HelpCircle", className: "w-3.5 h-3.5 text-amber-700 flex-shrink-0" }),
+                    h("div", {}, "対角線上にドラッグして四角形で範囲を一括選択変更。")
                   ),
-                  // テーブルエリア (個別スクロール)
-                  h("div", { className: "flex-1 overflow-auto bg-slate-50/50" },
-                    h("table", { className: "w-full min-w-[850px] border-collapse table-fixed select-none" },
-                      h("thead", { className: "sticky top-0 z-10 bg-slate-100" },
-                        h("tr", {},
-                          h("th", { className: "w-[18%] p-2 text-center text-xs font-black text-slate-500 border-b-2 border-slate-200" }, "時間帯"),
-                          days.map(day => h("th", { key: day, className: "p-2 text-center text-lg font-black text-slate-800 border-b-2 border-slate-200 border-l border-slate-200" }, day))
+                  
+                  // テーブルを1画面にピッタリ収めるためのCSS伸縮設計
+                  h("div", { className: "flex-1 overflow-hidden flex flex-col h-full bg-slate-50/50 min-h-0" },
+                    h("table", { className: "w-full min-w-[850px] border-collapse table-fixed select-none h-full flex flex-col" },
+                      h("thead", { className: "bg-slate-100 flex-shrink-0" },
+                        h("tr", { className: "flex w-full" },
+                          h("th", { className: "w-[18%] p-2 text-center text-xs font-black text-slate-500 border-b border-slate-350" }, "時間帯"),
+                          days.map(day => h("th", { key: day, className: "flex-1 p-2 text-center text-sm font-black text-slate-800 border-b border-slate-350 border-l border-slate-200" }, day))
                         )
                       ),
-                      h("tbody", {},
-                        timeSlots.map((timeSlot, timeIdx) => h("tr", { key: timeSlot, className: "hover:bg-slate-50/30" },
-                          h("td", { className: "p-2 text-center border-b border-slate-100 bg-slate-50/20 font-bold text-sm" }, timeSlot),
+                      h("tbody", { className: "flex-1 flex flex-col min-h-0" },
+                        timeSlots.map((timeSlot, timeIdx) => h("tr", { key: timeSlot, className: "hover:bg-slate-50/20 flex-1 flex w-full border-b border-slate-200 min-h-0" },
+                          h("td", { className: "w-[18%] p-1 text-center bg-slate-50/20 font-bold text-xs flex items-center justify-center border-r border-slate-100 min-h-0" }, timeSlot),
                           days.map((day, dayIdx) => {
                             const isAvail = isAvailable(currentMember.id, day, timeIdx);
                             const isBeingPainted = isInPaintRange(dayIdx, timeIdx);
@@ -788,23 +800,23 @@
 
                             if (isBeingPainted) {
                               if (paintValue === 1) {
-                                bgClass = 'bg-emerald-400 text-white border-emerald-500 scale-102 ring-4 ring-emerald-200';
-                                textText = '可能にする';
-                                iconElement = h(Icon, { name: "Check", className: "w-5 h-5 animate-pulse" });
+                                bgClass = 'bg-emerald-400 text-white border-emerald-500 ring-2 ring-emerald-100';
+                                textText = '可能へ';
+                                iconElement = h(Icon, { name: "Check", className: "w-4 h-4" });
                               } else {
-                                bgClass = 'bg-rose-400 text-white border-rose-500 scale-98 ring-4 ring-rose-200';
-                                textText = '不可にする';
-                                iconElement = h(Icon, { name: "X", className: "w-4 h-4 animate-pulse" });
+                                bgClass = 'bg-rose-400 text-white border-rose-500 ring-2 ring-rose-100';
+                                textText = '不可へ';
+                                iconElement = h(Icon, { name: "X", className: "w-3.5 h-3.5" });
                               }
                             } else {
                               if (isAvail) {
-                                bgClass = 'bg-emerald-500 text-white border-emerald-600 shadow-sm';
+                                bgClass = 'bg-emerald-500 text-white border-emerald-600 shadow-xs';
                                 textText = '可能';
-                                iconElement = h(Icon, { name: "Check", className: "w-5 h-5 font-black" });
+                                iconElement = h(Icon, { name: "Check", className: "w-4 h-4 font-black" });
                               } else {
-                                bgClass = 'bg-rose-50 hover:bg-rose-100 text-rose-500 border-rose-200';
+                                bgClass = 'bg-rose-50 hover:bg-rose-100 text-rose-500 border-rose-150';
                                 textText = '不可';
-                                iconElement = h(Icon, { name: "X", className: "w-4 h-4 text-rose-300 font-bold" });
+                                iconElement = h(Icon, { name: "X", className: "w-3.5 h-3.5 text-rose-300 font-bold" });
                               }
                             }
 
@@ -812,11 +824,11 @@
                               key: day,
                               onMouseDown: (e) => { e.preventDefault(); handlePaintStart(dayIdx, timeIdx, isAvail ? 1 : 0); },
                               onMouseEnter: () => handlePaintEnter(dayIdx, timeIdx),
-                              className: "p-1 border-b border-l border-slate-200 h-16 cursor-pointer"
+                              className: "flex-1 p-0.5 border-l border-slate-200 cursor-pointer flex items-stretch min-h-0 h-full"
                             },
-                              h("div", { className: `w-full h-full rounded-xl flex flex-col items-center justify-center border transition-all ${bgClass}` },
+                              h("div", { className: `w-full h-full rounded-lg flex flex-col items-center justify-center border transition-all ${bgClass}` },
                                 iconElement,
-                                h("span", { className: "text-xs font-black" }, textText)
+                                h("span", { className: "text-[9px] font-black leading-none mt-0.5" }, textText)
                               )
                             );
                           })
@@ -824,55 +836,95 @@
                       )
                     )
                   ),
-                  h("div", { className: "p-4 bg-slate-50 border-t-2 border-slate-150 text-center flex-shrink-0" },
-                    h("button", { onClick: () => setView('main'), className: "px-6 py-2.5 bg-slate-900 hover:bg-slate-950 text-white font-black rounded-xl text-sm shadow flex items-center gap-1.5 mx-auto" }, h(Icon, { name: "Calendar", className: "w-4 h-4" }), "メイン調整表に戻る")
+                  h("div", { className: "p-3 bg-slate-50 border-t-2 border-slate-150 text-center flex-shrink-0" },
+                    h("button", { onClick: () => setView('main'), className: "px-5 py-2 bg-slate-900 hover:bg-slate-950 text-white font-black rounded-lg text-xs shadow flex items-center gap-1 mx-auto" }, h(Icon, { name: "Calendar", className: "w-3.5 h-3.5" }), "メイン調整表に戻る")
                   )
                 );
-              })() : h("div", { className: "p-12 text-center text-slate-400 font-bold" }, h(Icon, { name: "Users", className: "w-12 h-12 text-slate-300 mx-auto mb-3" }), "左の名簿からメンバーを選択して設定を開始してください。")
+              })() : h("div", { className: "p-12 text-center text-slate-400 font-bold h-full flex flex-col justify-center items-center" }, h(Icon, { name: "Users", className: "w-12 h-12 text-slate-300 mb-3" }), "左の名簿からメンバーを選択して設定を開始してください。")
             )
           ),
-          view === 'axis-config' && h("div", { className: "max-w-3xl mx-auto bg-white rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden animate-fade-in flex flex-col max-h-full" },
-            h("div", { className: "p-5 bg-indigo-50/70 border-b-2 border-slate-200 flex-shrink-0" },
-              h("h2", { className: "text-xl md:text-2xl font-black text-slate-900 flex items-center gap-2" }, h(Icon, { name: "Settings", className: "w-6 h-6 text-indigo-600" }), "縦軸・横軸のカスタマイズ"),
-              h("p", { className: "text-xs md:text-sm text-slate-600 font-bold mt-0.5" }, "表の日程（横軸）と時間帯枠（縦軸）を柔軟に変更できます。")
+          
+          view === 'axis-config' && h("div", { className: "max-w-3xl mx-auto bg-white rounded-2xl border-2 border-slate-200 shadow-md overflow-hidden animate-fade-in flex flex-col max-h-full" },
+            h("div", { className: "p-4 bg-indigo-50/70 border-b-2 border-slate-200 flex-shrink-0" },
+              h("h2", { className: "text-lg md:text-xl font-black text-slate-900 flex items-center gap-1.5" }, h(Icon, { name: "Settings", className: "w-5 h-5 text-indigo-600" }), "縦軸・横軸のカスタマイズ"),
+              h("p", { className: "text-xs text-slate-600 font-bold mt-0.5" }, "表の日程（横軸）と時間帯枠（縦軸）を柔軟に変更できます。")
             ),
-            h("form", { onSubmit: handleSaveAxisConfig, className: "p-6 space-y-4 overflow-y-auto flex-1" },
+            h("form", { onSubmit: handleSaveAxisConfig, className: "p-5 space-y-4 overflow-y-auto flex-1 text-xs md:text-sm" },
               h("div", {},
-                h("label", { className: "block text-sm md:text-base font-black text-slate-700 mb-1" }, "横軸：日程・日付・曜日（カンマ「,」で区切ってください）"),
+                h("label", { className: "block font-black text-slate-700 mb-1" }, "横軸：日程・日付・曜日（カンマ「,」で区切ってください）"),
                 h("input", {
                   type: "text",
                   value: daysInput,
                   onChange: (e) => setDaysInput(e.target.value),
-                  className: "w-full px-3 py-2 text-base bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-bold"
+                  className: "w-full px-3 py-2 bg-slate-50 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-bold"
                 }),
-                h("p", { className: "text-xs text-slate-400 font-bold mt-0.5" }, "例: 24日(金), 27日(月), 28日(火)")
+                h("p", { className: "text-[10px] text-slate-400 font-bold mt-0.5" }, "例: 24日(金), 27日(月), 28日(火)")
               ),
               h("div", {},
-                h("label", { className: "block text-sm md:text-base font-black text-slate-700 mb-1" }, "縦軸：時間枠スロット（1行に1コマ分入力してください）"),
+                h("label", { className: "block font-black text-slate-700 mb-1" }, "縦軸：時間枠スロット（1行に1コマ分入力してください）"),
                 h("textarea", {
                   rows: "5",
                   value: timeSlotsInput,
                   onChange: (e) => setTimeSlotsInput(e.target.value),
-                  className: "w-full px-3 py-2 text-base bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-bold resize-none"
+                  className: "w-full px-3 py-2 bg-slate-50 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-bold resize-none"
                 })
               ),
               h("div", { className: "flex gap-3 pt-3 border-t border-slate-100 flex-shrink-0" },
-                h("button", { type: "button", onClick: () => setView('main'), className: "flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-xl text-sm transition-colors" }, "キャンセル"),
-                h("button", { type: "submit", className: "flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl text-sm transition-colors shadow-sm" }, "変更を適用する")
+                h("button", { type: "button", onClick: () => setView('main'), className: "flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-lg text-xs transition-colors" }, "キャンセル"),
+                h("button", { type: "submit", className: "flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-lg text-xs transition-colors shadow-xs" }, "変更を適用する")
               )
             )
           )
         ),
-        // フッター (固定化)
-        h("footer", { className: "bg-white border-t-2 border-slate-200 py-3 text-center text-xs text-slate-500 font-bold flex-shrink-0" },
-          h("div", { className: "max-w-[95%] xl:max-w-[1600px] mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2" },
+        
+        // フッター
+        h("footer", { className: "bg-white border-t-2 border-slate-200 py-2 text-center text-[10px] md:text-xs text-slate-500 font-bold flex-shrink-0" },
+          h("div", { className: "max-w-[95%] xl:max-w-[1600px] mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-1" },
             h("p", {}, "© 2026 小松台小R8個人面談調整アプリ - GitHub公開対応"),
             h("div", { className: "flex gap-2" },
               h("span", {}, "データ自動セーブ保存: 有効"),
               h("span", {}, "|"),
-              h("span", {}, "高効率ウィンドウ最大最適化表示")
+              h("span", {}, "高効率ウィンドウ吸着型フィット表示")
             )
           )
+        ),
+
+        // カスタム確認ダイアログ (Stale-Closureフリー設計)
+        confirmType && h("div", { className: "fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-6 z-50 animate-fade-in" },
+          h("div", { className: "bg-white rounded-2xl p-6 max-w-sm w-full border-2 border-slate-300 shadow-2xl animate-scale-up text-xs md:text-sm" },
+            h("h3", { className: "text-base font-extrabold text-slate-900 flex items-center gap-1.5" },
+              h(Icon, { name: "AlertCircle", className: "w-5 h-5 text-rose-600" }),
+              confirmType === 'delete-member' ? '生徒の削除' :
+              confirmType === 'clear-schedule' ? '割り当て表のクリア' :
+              confirmType === 'reset-all' ? 'システム全リセット' : ''
+            ),
+            h("p", { className: "mt-3 text-slate-700 leading-relaxed whitespace-pre-wrap font-bold" },
+              confirmType === 'delete-member' ? `本当に「${targetMember?.name}」を削除しますか？\n割り当て済みの全コマからも自動的にクリアされます。` :
+              confirmType === 'clear-schedule' ? '現在のスケジュール割り当てをすべてリセットしますか？' :
+              confirmType === 'reset-all' ? '登録されたすべての生徒・予定設定を初期状態に戻しますか？' : ''
+            ),
+            h("div", { className: "mt-5 flex gap-3" },
+              h("button", {
+                onClick: () => { setConfirmType(null); setTargetMember(null); },
+                className: "flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-lg text-xs transition-colors"
+              }, "キャンセル"),
+              h("button", {
+                onClick: () => {
+                  if (confirmType === 'delete-member') executeDelete(targetMember?.id);
+                  else if (confirmType === 'clear-schedule') executeClearSchedule();
+                  else if (confirmType === 'reset-all') executeResetAll();
+                },
+                className: "flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-lg text-xs transition-colors shadow-xs"
+              }, "実行する")
+            )
+          )
+        ),
+
+        // トースト通知
+        toast && h("div", { className: "fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border bg-white text-slate-900 border-slate-200 text-xs md:text-sm font-black animate-scale-up" },
+          h("div", { className: "p-1 rounded bg-indigo-50 text-indigo-700" }, h(Icon, { name: "Check", className: "w-4 h-4" })),
+          h("span", {}, toast.message),
+          h("button", { onClick: () => setToast(null), className: "text-slate-400 hover:text-slate-600 ml-1.5" }, h(Icon, { name: "X", className: "w-3.5 h-3.5" }))
         )
       );
     }
