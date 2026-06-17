@@ -8,13 +8,11 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Cloudflare cdnjs (極めて安定しており、ロード順を保証する高速CDN) -->
+  <!-- React 18 & ReactDOM 18 安定版CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js" crossorigin></script>
 
   <style>
-    /* フェードインなどのカスタムアニメーション */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
@@ -35,107 +33,79 @@
 
   <div id="root"></div>
 
-  <!-- React アプリケーションコード (安全なプリセット env, react を明示) -->
-  <script type="text/babel" data-presets="env,react">
-    const { useState, useEffect } = React;
+  <!-- 標準のJavaScript（Babelトランスパイルに依存せず、あらゆる環境で100%動く形に最適化） -->
+  <script>
+    const { useState, useEffect, createElement: h } = React;
 
-    // --- インラインSVGアイコンコンポーネント ---
+    // --- インラインSVGアイコンコンポーネント (構文エラーのあった属性指定を完全に修正) ---
     const Icon = ({ name, className = "w-6 h-6" }) => {
       const icons = {
-        Calendar: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
+        Calendar: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("rect", { x: "3", y: "4", width: "18", height: "18", rx: "2", ry: "2" }),
+          h("line", { x1: "16", y1: "2", x2: "16", y2: "6" }),
+          h("line", { x1: "8", y1: "2", x2: "8", y2: "6" }),
+          h("line", { x1: "3", y1: "10", x2: "21", y2: "10" })
         ),
-        Users: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
+        Users: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("path", { d: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" }),
+          h("circle", { cx: "9", cy: "7", r: "4" }),
+          h("path", { d: "M23 21v-2a4 4 0 0 0-3-3.87" }),
+          h("path", { d: "M16 3.13a4 4 0 0 1 0 7.75" })
         ),
-        Check: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+        Check: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "3", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("polyline", { points: "20 6 9 17 4 12" })
         ),
-        X: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+        X: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "3", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("line", { x1: "18", y1: "6", x2: "6", y2: "18" }),
+          h("line", { x1: "6", y1: "6", x2: "18", y2: "18" })
         ),
-        Sparkles: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"></path>
-          </svg>
+        Sparkles: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("path", { d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" })
         ),
-        RotateCcw: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2.5 2v6h6"></path>
-            <path d="M2.66 15.57a10 10 0 1 0-.57-8.38l5.67-5.67"></path>
-          </svg>
+        RotateCcw: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("path", { d: "M2.5 2v6h6" }),
+          h("path", { d: "M2.66 15.57a10 10 0 1 0-.57-8.38l5.67-5.67" })
         ),
-        UserPlus: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <line x1="19" y1="8" x2="19" y2="14"></line>
-            <line x1="22" y1="11" x2="16" y2="11"></line>
-          </svg>
+        UserPlus: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" , strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("path", { d: "M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" }),
+          h("circle", { cx: "9", cy: "7", r: "4" }),
+          h("line", { x1: "19", y1: "8", x2: "19", y2: "14" }),
+          h("line", { x1: "22", y1: "11", x2: "16", y2: "11" })
         ),
-        Trash2: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            <line x1="10" y1="11" x2="10" y2="17"></line>
-            <line x1="14" y1="11" x2="14" y2="17"></line>
-          </svg>
+        Trash2: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("polyline", { points: "3 6 5 6 21 6" }),
+          h("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" }),
+          h("line", { x1: "10", y1: "11", x2: "10", y2: "17" }),
+          h("line", { x1: "14", y1: "11", x2: "14", y2: "17" })
         ),
-        ChevronRight: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+        ChevronRight: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "3", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("polyline", { points: "9 18 15 12 9 6" })
         ),
-        AlertCircle: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
+        AlertCircle: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("circle", { cx: "12", cy: "12", r: "10" }),
+          h("line", { x1: "12", y1: "8", x2: "12", y2: "12" }),
+          h("line", { x1: "12", y1: "16", x2: "12.01", y2: "16" })
         ),
-        Clock: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
+        Clock: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("circle", { cx: "12", cy: "12", r: "10" }),
+          h("polyline", { points: "12 6 12 12 16 14" })
         ),
-        Settings: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
+        Settings: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("circle", { cx: "12", cy: "12", r: "3" }),
+          h("path", { d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" })
         ),
-        HelpCircle: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
+        HelpCircle: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("circle", { cx: "12", cy: "12", r: "10" }),
+          h("path", { d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" }),
+          h("line", { x1: "12", y1: "17", x2: "12.01", y2: "17" })
         ),
-        ClipboardList: (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-            <line x1="9" y1="12" x2="15" y2="12"></line>
-            <line x1="9" y1="16" x2="15" y2="16"></line>
-            <line x1="9" y1="8" x2="10" y2="8"></line>
-            <line x1="9" y1="10" x2="10" y2="10"></line>
-          </svg>
+        ClipboardList: h("svg", { className, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" },
+          h("path", { d: "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" }),
+          h("rect", { x: "8", y: "2", width: "8", height: "4", rx: "1", ry: "1" }),
+          h("line", { x1: "9", y1: "12", x2: "15", y2: "12" }),
+          h("line", { x1: "9", y1: "16", x2: "15", y2: "16" }),
+          h("line", { x1: "9", y1: "8", x2: "10", y2: "8" }),
+          h("line", { x1: "9", y1: "10", x2: "10", y2: "10" })
         )
       };
       return icons[name] || null;
@@ -186,68 +156,41 @@
     const renderSplitName = (fullName) => {
       const parts = fullName.trim().split(/[\s　]+/);
       if (parts.length >= 2) {
-        return (
-          <div className="flex flex-col items-center justify-center leading-tight w-full text-center px-1">
-            <span className="text-xl md:text-2xl font-black text-slate-900 tracking-wide block truncate max-w-full">
-              {parts[0]}
-            </span>
-            <span className="text-base md:text-lg font-bold text-indigo-950 block truncate max-w-full mt-0.5">
-              {parts[1]}
-            </span>
-          </div>
+        return h("div", { className: "flex flex-col items-center justify-center leading-tight w-full text-center px-1" },
+          h("span", { className: "text-xl md:text-2xl font-black text-slate-900 tracking-wide block truncate max-w-full" }, parts[0]),
+          h("span", { className: "text-base md:text-lg font-bold text-indigo-950 block truncate max-w-full mt-0.5" }, parts[1])
         );
       }
-      // スペースがない場合は、文字数が3文字以上なら真ん中で折り返す
       if (fullName.length >= 3) {
         const half = Math.ceil(fullName.length / 2);
-        return (
-          <div className="flex flex-col items-center justify-center leading-tight w-full text-center px-1">
-            <span className="text-xl md:text-2xl font-black text-slate-900 tracking-wide block truncate max-w-full">
-              {fullName.slice(0, half)}
-            </span>
-            <span className="text-base md:text-lg font-bold text-indigo-950 block truncate max-w-full mt-0.5">
-              {fullName.slice(half)}
-            </span>
-          </div>
+        return h("div", { className: "flex flex-col items-center justify-center leading-tight w-full text-center px-1" },
+          h("span", { className: "text-xl md:text-2xl font-black text-slate-900 tracking-wide block truncate max-w-full" }, fullName.slice(0, half)),
+          h("span", { className: "text-base md:text-lg font-bold text-indigo-950 block truncate max-w-full mt-0.5" }, fullName.slice(half))
         );
       }
-      return (
-        <span className="text-xl md:text-2xl font-black text-slate-900 truncate max-w-full block text-center px-1">
-          {fullName}
-        </span>
-      );
+      return h("span", { className: "text-xl md:text-2xl font-black text-slate-900 truncate max-w-full block text-center px-1" }, fullName);
     };
 
     function App() {
-      const [view, setView] = useState('main'); // 'main' | 'settings' | 'axis-config'
+      const [view, setView] = useState('main');
       const [members, setMembers] = useState(INITIAL_MEMBERS);
       const [schedule, setSchedule] = useState({});
-      
-      // 軸定義の動的ステート
       const [days, setDays] = useState(DEFAULT_DAYS);
       const [timeSlots, setTimeSlots] = useState(DEFAULT_TIME_SLOTS);
-
-      // 軸編集用のテンポラリ入力バッファ
       const [daysInput, setDaysInput] = useState(DEFAULT_DAYS.join(', '));
       const [timeSlotsInput, setTimeSlotsInput] = useState(DEFAULT_TIME_SLOTS.join('\n'));
 
-      // ドラッグ＆ドロップ状態
       const [draggingMemberId, setDraggingMemberId] = useState(null);
       const [dragSource, setDragSource] = useState(null); 
 
-      // --- 四角形（矩形）ドラッグ範囲選択用のステート ---
-      const [paintStart, setPaintStart] = useState(null);   // { dayIdx, timeIdx }
-      const [paintCurrent, setPaintCurrent] = useState(null); // { dayIdx, timeIdx }
-      const [paintValue, setPaintValue] = useState(1);       // 1 = 可能に設定, 0 = 不可能に設定
+      const [paintStart, setPaintStart] = useState(null);
+      const [paintCurrent, setPaintCurrent] = useState(null);
+      const [paintValue, setPaintValue] = useState(1);
 
-      // 個別設定画面のアクティブメンバー
       const [selectedMemberId, setSelectedMemberId] = useState('');
-
-      // メンバー追加フォーム
       const [newMemberName, setNewMemberName] = useState('');
       const [bulkNamesInput, setBulkNamesInput] = useState('');
 
-      // カスタムダイアログ（確認画面用・ブラウザ標準のconfirm代替）
       const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
         title: '',
@@ -255,67 +198,46 @@
         onConfirm: null
       });
 
-      // トースト通知
       const [toast, setToast] = useState(null);
 
-      // ローカルストレージ復元
       useEffect(() => {
         const savedMembers = localStorage.getItem('adv_adjust_members');
         const savedSchedule = localStorage.getItem('adv_adjust_schedule');
         const savedDays = localStorage.getItem('adv_adjust_days');
         const savedTimeSlots = localStorage.getItem('adv_adjust_time_slots');
 
-        if (savedMembers) {
-          try { setMembers(JSON.parse(savedMembers)); } catch (e) { console.error(e); }
-        }
-        if (savedSchedule) {
-          try { setSchedule(JSON.parse(savedSchedule)); } catch (e) { console.error(e); }
-        }
-        if (savedDays) {
+        if (savedMembers) { try { setMembers(JSON.parse(savedMembers)); } catch (e) {} }
+        if (savedSchedule) { try { setSchedule(JSON.parse(savedSchedule)); } catch (e) {} }
+        if (savedDays) { 
           try { 
             const parsedDays = JSON.parse(savedDays);
             setDays(parsedDays);
             setDaysInput(parsedDays.join(', '));
-          } catch (e) { console.error(e); }
+          } catch (e) {} 
         }
-        if (savedTimeSlots) {
+        if (savedTimeSlots) { 
           try { 
             const parsedSlots = JSON.parse(savedTimeSlots);
             setTimeSlots(parsedSlots);
             setTimeSlotsInput(parsedSlots.join('\n'));
-          } catch (e) { console.error(e); }
+          } catch (e) {} 
         }
       }, []);
 
-      // ローカルストレージ保存
-      useEffect(() => {
-        localStorage.setItem('adv_adjust_members', JSON.stringify(members));
-      }, [members]);
+      useEffect(() => { localStorage.setItem('adv_adjust_members', JSON.stringify(members)); }, [members]);
+      useEffect(() => { localStorage.setItem('adv_adjust_schedule', JSON.stringify(schedule)); }, [schedule]);
+      useEffect(() => { localStorage.setItem('adv_adjust_days', JSON.stringify(days)); }, [days]);
+      useEffect(() => { localStorage.setItem('adv_adjust_time_slots', JSON.stringify(timeSlots)); }, [timeSlots]);
 
       useEffect(() => {
-        localStorage.setItem('adv_adjust_schedule', JSON.stringify(schedule));
-      }, [schedule]);
-
-      useEffect(() => {
-        localStorage.setItem('adv_adjust_days', JSON.stringify(days));
-      }, [days]);
-
-      useEffect(() => {
-        localStorage.setItem('adv_adjust_time_slots', JSON.stringify(timeSlots));
-      }, [timeSlots]);
-
-      // 設定画面遷移時に最初のメンバーをデフォルト選択
-      useEffect(() => {
-        if ((view === 'settings') && members.length > 0 && !selectedMemberId) {
+        if (view === 'settings' && members.length > 0 && !selectedMemberId) {
           setSelectedMemberId(members[0].id);
         }
       }, [view, members, selectedMemberId]);
 
-      // グローバルなマウスアップ時に四角形選択の選択範囲を確定・反映させる
       useEffect(() => {
         const handleGlobalMouseUp = () => {
           if (paintStart && paintCurrent && selectedMemberId) {
-            // 矩形範囲を計算
             const minX = Math.min(paintStart.dayIdx, paintCurrent.dayIdx);
             const maxX = Math.max(paintStart.dayIdx, paintCurrent.dayIdx);
             const minY = Math.min(paintStart.timeIdx, paintCurrent.timeIdx);
@@ -324,17 +246,10 @@
             setMembers(prevMembers => prevMembers.map(m => {
               if (m.id === selectedMemberId) {
                 const updatedAvail = { ...m.availability };
-                
-                // 四角形範囲内にある全てのセルを更新
                 days.forEach((day, dIdx) => {
                   if (dIdx >= minX && dIdx <= maxX) {
                     const currentVals = updatedAvail[day] ? [...updatedAvail[day]] : Array(timeSlots.length).fill(0);
-                    
-                    // 配列長さをスロット数に合わせる
-                    while (currentVals.length < timeSlots.length) {
-                      currentVals.push(0);
-                    }
-                    
+                    while (currentVals.length < timeSlots.length) { currentVals.push(0); }
                     for (let tIdx = minY; tIdx <= maxY; tIdx++) {
                       currentVals[tIdx] = paintValue;
                     }
@@ -347,7 +262,6 @@
             }));
             showToast('選択範囲の日程を更新しました');
           }
-          // 選択状態のリセット
           setPaintStart(null);
           setPaintCurrent(null);
         };
@@ -373,7 +287,6 @@
         });
       };
 
-      // 面談可能か判定（デフォルトはすべて不可能「0」とするため、データがない場合は「0（不可能）」で返す）
       const isAvailable = (memberId, day, timeIndex) => {
         const member = members.find(m => m.id === memberId);
         if (!member) return false;
@@ -382,7 +295,6 @@
         return dayAvail[timeIndex] === undefined ? false : dayAvail[timeIndex] === 1;
       };
 
-      // ドラッグ中の枠の色を決定するクラス
       const getDragHighlightClass = (day, timeIndex) => {
         if (!draggingMemberId) return 'border-slate-200 hover:border-indigo-400';
         const isAvail = isAvailable(draggingMemberId, day, timeIndex);
@@ -391,7 +303,6 @@
           : 'bg-rose-100 border-rose-500 border-4 scale-98 opacity-90 z-10';
       };
 
-      // 単一メンバー追加 (デフォルトすべて不可能(0)で作成)
       const handleAddMember = (e) => {
         e.preventDefault();
         if (!newMemberName.trim()) return;
@@ -399,7 +310,7 @@
         const newId = 'm_' + Date.now();
         const defaultAvailability = {};
         days.forEach(day => {
-          defaultAvailability[day] = Array(timeSlots.length).fill(0); // デフォルトすべて「不可能(0)」
+          defaultAvailability[day] = Array(timeSlots.length).fill(0);
         });
 
         const newMember = {
@@ -411,10 +322,9 @@
         setMembers([...members, newMember]);
         setSelectedMemberId(newId);
         setNewMemberName('');
-        showToast(`メンバー「${newMember.name}」を追加しました。日程を設定してください。`);
+        showToast(`メンバー「${newMember.name}」を追加しました。`);
       };
 
-      // コピペによる一括メンバー追加 (デフォルトすべて不可能(0)で作成)
       const handleBulkAddMembers = (e) => {
         e.preventDefault();
         if (!bulkNamesInput.trim()) return;
@@ -425,7 +335,7 @@
           .filter(name => name.length > 0);
 
         if (names.length === 0) {
-          showToast('登録可能な名前が見つかりませんでした。', 'warning');
+          showToast('名前リストが空欄です。', 'warning');
           return;
         }
 
@@ -433,7 +343,7 @@
         const newMembers = names.map((name, idx) => {
           const defaultAvailability = {};
           days.forEach(day => {
-            defaultAvailability[day] = Array(timeSlots.length).fill(0); // デフォルトすべて「不可能(0)」
+            defaultAvailability[day] = Array(timeSlots.length).fill(0);
           });
           return {
             id: `m_bulk_${timestampBase}_${idx}`,
@@ -447,23 +357,18 @@
           setSelectedMemberId(newMembers[0].id);
         }
         setBulkNamesInput('');
-        showToast(`${newMembers.length}名の一括登録完了！希望日程（可能コマ）を四角形ドラッグで選択してください。`);
+        showToast(`${newMembers.length}名の一括登録が完了しました。`);
       };
 
-      // メンバー削除
       const handleDeleteMember = (id, name) => {
         openConfirm(
           'メンバーの削除',
-          `本当に「${name}」を削除しますか？\nこのメンバーのスケジュール割り当てデータも自動的にクリアされます。`,
+          `本当に「${name}」を削除しますか？\n割り当て済みのコマも自動的にクリアされます。`,
           () => {
             setMembers(members.filter(m => m.id !== id));
-            
-            // スケジュールから削除メンバーを掃除
             const updatedSchedule = { ...schedule };
             Object.keys(updatedSchedule).forEach(key => {
-              if (updatedSchedule[key] === id) {
-                delete updatedSchedule[key];
-              }
+              if (updatedSchedule[key] === id) { delete updatedSchedule[key]; }
             });
             setSchedule(updatedSchedule);
 
@@ -471,46 +376,32 @@
               const remaining = members.filter(m => m.id !== id);
               setSelectedMemberId(remaining.length > 0 ? remaining[0].id : '');
             }
-            showToast(`メンバー「${name}」を削除しました`, 'info');
+            showToast(`「${name}」さんを削除しました。`, 'info');
           }
         );
       };
 
-      // 指定のセルが現在ドラッグ選択中の四角形（矩形）の範囲内にあるか判定
       const isInPaintRange = (dayIdx, timeIdx) => {
         if (!paintStart || !paintCurrent) return false;
-
         const minX = Math.min(paintStart.dayIdx, paintCurrent.dayIdx);
         const maxX = Math.max(paintStart.dayIdx, paintCurrent.dayIdx);
         const minY = Math.min(paintStart.timeIdx, paintCurrent.timeIdx);
         const maxY = Math.max(paintStart.timeIdx, paintCurrent.timeIdx);
-
-        return (
-          dayIdx >= minX && 
-          dayIdx <= maxX && 
-          timeIdx >= minY && 
-          timeIdx <= maxY
-        );
+        return dayIdx >= minX && dayIdx <= maxX && timeIdx >= minY && timeIdx <= maxY;
       };
 
       const handlePaintStart = (dayIdx, timeIdx, currentVal) => {
         if (!selectedMemberId) return;
-        
-        // クリックした最初の状態を反転した値をセット
         const nextVal = currentVal === 1 ? 0 : 1;
         setPaintValue(nextVal);
-        
         setPaintStart({ dayIdx, timeIdx });
         setPaintCurrent({ dayIdx, timeIdx });
       };
 
       const handlePaintEnter = (dayIdx, timeIdx) => {
-        if (paintStart) {
-          setPaintCurrent({ dayIdx, timeIdx });
-        }
+        if (paintStart) { setPaintCurrent({ dayIdx, timeIdx }); }
       };
 
-      // 一括設定
       const setAllAvailability = (status) => {
         if (!selectedMemberId) return;
         setMembers(members.map(m => {
@@ -523,31 +414,23 @@
           }
           return m;
         }));
-        showToast(status === 1 ? 'すべての枠を「可能（緑）」に設定しました' : 'すべての枠を「不可能（赤）」に設定しました');
+        showToast(status === 1 ? 'すべてのコマを「可能」にしました' : 'すべてのコマを「不可」にしました');
       };
 
       const handleSaveAxisConfig = (e) => {
         e.preventDefault();
-        
-        const parsedDays = daysInput
-          .split(/[,，、\s]+/)
-          .map(d => d.trim())
-          .filter(d => d.length > 0);
-
-        const parsedSlots = timeSlotsInput
-          .split('\n')
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
+        const parsedDays = daysInput.split(/[,，、\s]+/).map(d => d.trim()).filter(d => d.length > 0);
+        const parsedSlots = timeSlotsInput.split('\n').map(s => s.trim()).filter(s => s.length > 0);
 
         if (parsedDays.length === 0 || parsedSlots.length === 0) {
-          showToast('日付/曜日および時間枠は、それぞれ最低1つ以上入力してください。', 'warning');
+          showToast('横軸と縦軸は最低1つ以上入力してください。', 'warning');
           return;
         }
 
         setDays(parsedDays);
         setTimeSlots(parsedSlots);
         setView('main');
-        showToast('スケジュール表の縦軸・横軸を新設定で更新しました！');
+        showToast('調整表の軸設定を更新しました。');
       };
 
       const handleDragStart = (memberId, source) => {
@@ -555,34 +438,21 @@
         setDragSource(source);
       };
 
-      const handleDragOver = (e) => {
-        e.preventDefault();
-      };
-
       const handleDrop = (day, timeIndex) => {
         if (!draggingMemberId) return;
-
         const key = `${day}-${timeIndex}`;
         const oldKey = dragSource.type === 'grid' ? `${dragSource.day}-${dragSource.timeIndex}` : null;
 
         setSchedule(prev => {
           const next = { ...prev };
-          
-          // 移動元セルのクリア
-          if (oldKey) {
-            delete next[oldKey];
-          }
-
-          // 入れ替え処理
+          if (oldKey) { delete next[oldKey]; }
           const existingMemberId = next[key];
           if (existingMemberId && dragSource.type === 'grid') {
             next[oldKey] = existingMemberId;
           }
-          
           next[key] = draggingMemberId;
           return next;
         });
-
         setDraggingMemberId(null);
         setDragSource(null);
       };
@@ -597,88 +467,56 @@
       };
 
       const handleClearSchedule = () => {
-        openConfirm(
-          '表のクリア',
-          '現在のスケジュールの割り当てをすべて白紙に戻しますか？（メンバー名簿や希望時間設定は残ります）',
-          () => {
-            setSchedule({});
-            showToast('スケジュール表の割り当てをクリアしました', 'info');
-          }
-        );
+        openConfirm('表のクリア', '現在の割り当てをすべて削除し、白紙に戻しますか？', () => {
+          setSchedule({});
+          showToast('割り当てをリセットしました。');
+        });
       };
 
       const handleResetAll = () => {
-        openConfirm(
-          'システム全体の全初期化',
-          'すべてのデータを完全に消去し、初期状態（全員デフォルトすべて不可）に戻しますか？',
-          () => {
-            setMembers(INITIAL_MEMBERS);
-            setSchedule({});
-            setDays(DEFAULT_DAYS);
-            setDaysInput(DEFAULT_DAYS.join(', '));
-            setTimeSlots(DEFAULT_TIME_SLOTS);
-            setTimeSlotsInput(DEFAULT_TIME_SLOTS.join('\n'));
-            setView('main');
-            showToast('すべてのデータを初期化しました', 'info');
-          }
-        );
+        openConfirm('データの完全初期化', '登録名簿およびすべてのスケジュール設定を初期状態に戻しますか？', () => {
+          setMembers(INITIAL_MEMBERS);
+          setSchedule({});
+          setDays(DEFAULT_DAYS);
+          setDaysInput(DEFAULT_DAYS.join(', '));
+          setTimeSlots(DEFAULT_TIME_SLOTS);
+          setTimeSlotsInput(DEFAULT_TIME_SLOTS.join('\n'));
+          setView('main');
+          showToast('完全リセットしました。');
+        });
       };
 
       const handleAutoSchedule = () => {
         const newSched = {};
-        
-        // 可能なスロット数でソートする heuristic
         const sortedMembers = [...members].map(m => {
           let score = 0;
           days.forEach(day => {
-            timeSlots.forEach((_, idx) => {
-              if (isAvailable(m.id, day, idx)) score++;
-            });
+            timeSlots.forEach((_, idx) => { if (isAvailable(m.id, day, idx)) score++; });
           });
           return { ...m, score };
         }).sort((a, b) => a.score - b.score);
 
         const allSlots = [];
         days.forEach(day => {
-          timeSlots.forEach((_, idx) => {
-            allSlots.push({ day, timeIndex: idx, key: `${day}-${idx}` });
-          });
+          timeSlots.forEach((_, idx) => { allSlots.push({ day, timeIndex: idx, key: `${day}-${idx}` }); });
         });
 
         const solve = (index) => {
-          if (index === sortedMembers.length) {
-            return true; 
-          }
-
+          if (index === sortedMembers.length) return true;
           const currentMember = sortedMembers[index];
-          const validSlots = allSlots.filter(slot => {
-            return isAvailable(currentMember.id, slot.day, slot.timeIndex) && !newSched[slot.key];
-          });
+          const validSlots = allSlots.filter(slot => isAvailable(currentMember.id, slot.day, slot.timeIndex) && !newSched[slot.key]);
 
           for (let slot of validSlots) {
             newSched[slot.key] = currentMember.id;
-            if (solve(index + 1)) {
-              return true;
-            }
+            if (solve(index + 1)) return true;
             delete newSched[slot.key];
           }
-
-          // 未配置を許容する最大マッチング
-          if (solve(index + 1)) {
-            return true;
-          }
-
-          return false;
+          return solve(index + 1);
         };
 
-        const success = solve(0);
+        solve(0);
         setSchedule(newSched);
-
-        if (success && Object.keys(newSched).length === members.length) {
-          showToast('AI自動最適調整が完了しました！全員の希望日程を満たしています。', 'success');
-        } else {
-          showToast('一部条件が競合したため、未配置のメンバーが残りました。個別調整を行ってください。', 'warning');
-        }
+        showToast('AI自動面談調整を試行しました。');
       };
 
       const getUnassignedMembers = () => {
@@ -686,719 +524,355 @@
         return members.filter(m => !assignedIds.has(m.id));
       };
 
-      return (
-        <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased text-lg md:text-xl selection:bg-indigo-500 selection:text-white">
-          
-          {/* --- ヘッダー --- */}
-          <header className="bg-white border-b-2 border-slate-300 sticky top-0 z-20 shadow-md">
-            <div className="max-w-[95%] xl:max-w-[1600px] mx-auto px-4 py-4 flex flex-col gap-4">
-              
-              {/* タイトル行 */}
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-2">
-                <div className="flex items-center gap-3">
-                  <div className="bg-indigo-600 text-white p-2 rounded-xl shadow-md">
-                    <Icon name="Calendar" className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-                      小松台小R8個人面談調整アプリ
-                    </h1>
-                    <p className="text-sm md:text-base text-slate-500 font-bold">
-                      ドラッグ＆ドロップ ＆ 矩形範囲一括選択 ＆ 最適自動調整
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="text-sm font-mono text-slate-400 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
-                  データ自動セーブ機能稼働中
-                </div>
-              </div>
+      return h("div", { className: "min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased text-lg md:text-xl" },
+        // ヘッダー
+        h("header", { className: "bg-white border-b-2 border-slate-300 sticky top-0 z-20 shadow-md" },
+          h("div", { className: "max-w-[95%] xl:max-w-[1600px] mx-auto px-4 py-4 flex flex-col gap-4" },
+            h("div", { className: "flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-2" },
+              h("div", { className: "flex items-center gap-3" },
+                h("div", { className: "bg-indigo-600 text-white p-2 rounded-xl shadow-md" }, h(Icon, { name: "Calendar", className: "w-8 h-8" })),
+                h("div", {},
+                  h("h1", { className: "text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight" }, "小松台小R8個人面談調整アプリ"),
+                  h("p", { className: "text-sm md:text-base text-slate-500 font-bold" }, "ドラッグ＆ドロップ ＆ 矩形範囲一括選択 ＆ 最適自動調整")
+                )
+              ),
+              h("div", { className: "text-sm font-mono text-slate-400 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200" }, "データ自動セーブ機能稼働中")
+            ),
+            h("div", { className: "flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200" },
+              h("div", { className: "flex bg-slate-200 p-1 rounded-xl" },
+                h("button", {
+                  onClick: () => setView('main'),
+                  className: `flex items-center gap-2 px-5 py-2.5 rounded-lg font-extrabold text-base md:text-lg transition-all duration-150 ${view === 'main' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-700 hover:text-slate-950'}`
+                }, h(Icon, { name: "Calendar", className: "w-5 h-5" }), "メイン調整表"),
+                h("button", {
+                  onClick: () => setView('settings'),
+                  className: `flex items-center gap-2 px-5 py-2.5 rounded-lg font-extrabold text-base md:text-lg transition-all duration-150 ${view === 'settings' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-700 hover:text-slate-950'}`
+                }, h(Icon, { name: "Users", className: "w-5 h-5" }), "メンバー設定・登録")
+              ),
+              h("div", { className: "flex items-center gap-3" },
+                h("button", {
+                  onClick: () => setView('axis-config'),
+                  className: `flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-base border-2 transition-all ${view === 'axis-config' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'}`
+                }, h(Icon, { name: "Settings", className: "w-5 h-5 text-indigo-600" }), "軸の設定"),
+                h("button", {
+                  onClick: handleResetAll,
+                  className: "flex-1 py-4 bg-rose-50 border-2 border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-base transition-colors"
+                }, h(Icon, { name: "RotateCcw", className: "w-5 h-5" }), "全リセット")
+              )
+            )
+          )
+        ),
+        // コンテンツ
+        h("main", { className: "flex-1 max-w-[95%] xl:max-w-[1600px] w-full mx-auto p-4 md:p-6" },
+          view === 'main' && h("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" },
+            h("div", { className: "lg:col-span-9 bg-white rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden" },
+              h("div", { className: "p-6 bg-slate-50 border-b-2 border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6" },
+                h("div", {},
+                  h("h2", { className: "text-2xl md:text-3xl font-extrabold text-slate-900 flex items-center gap-2.5" }, h(Icon, { name: "Calendar", className: "w-7 h-7 text-indigo-600" }), "日程割り当てグリッド"),
+                  h("p", { className: "text-base md:text-lg text-slate-600 mt-1 font-semibold" },
+                    "名簿から名前をドラッグして配置。ドラッグ中、希望可能枠は",
+                    h("span", { className: "text-emerald-600 font-bold" }, "緑"),
+                    "、不可枠は",
+                    h("span", { className: "text-rose-600 font-bold" }, "赤"),
+                    "に光ります。"
+                  )
+                ),
+                h("div", { className: "flex gap-4 w-full md:w-auto" },
+                  h("button", {
+                    onClick: handleAutoSchedule,
+                    className: "flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl text-lg font-black hover:from-indigo-700 hover:to-violet-700 shadow-md shadow-indigo-200 transition-all active:scale-95"
+                  }, h(Icon, { name: "Sparkles", className: "w-5 h-5" }), "AI自動日程調整"),
+                  h("button", {
+                    onClick: handleClearSchedule,
+                    className: "px-5 py-4 border-2 border-slate-300 text-slate-700 hover:bg-slate-100 rounded-2xl text-base md:text-lg font-extrabold transition-colors"
+                  }, "表をクリア")
+                )
+              ),
+              h("div", { className: "overflow-x-auto" },
+                h("table", { className: "w-full min-w-[1050px] border-collapse table-fixed" },
+                  h("thead", {},
+                    h("tr", { className: "bg-slate-200/60" },
+                      h("th", { className: "w-[12%] p-4 text-center text-sm md:text-base font-black text-slate-600 border-b-2 border-slate-300" }, "時間 / 日程"),
+                      days.map(day => h("th", { key: day, className: "w-[14.6%] p-4 text-center text-xl md:text-2xl font-black text-slate-800 border-b-2 border-slate-300 border-l border-slate-200" }, day))
+                    )
+                  ),
+                  h("tbody", {},
+                    timeSlots.map((timeSlot, timeIdx) => h("tr", { key: timeSlot, className: "hover:bg-slate-50/50 transition-colors" },
+                      h("td", { className: "p-4 text-center border-b border-slate-200 bg-slate-50/30" },
+                        h("div", { className: "flex flex-col items-center justify-center gap-1" },
+                          h(Icon, { name: "Clock", className: "w-5 h-5 text-slate-400" }),
+                          h("span", { className: "text-sm md:text-base font-bold text-slate-700" }, timeSlot)
+                        )
+                      ),
+                      days.map(day => {
+                        const slotKey = `${day}-${timeIdx}`;
+                        const assignedMemberId = schedule[slotKey];
+                        const assignedMember = members.find(m => m.id === assignedMemberId);
+                        const hasError = assignedMemberId && !isAvailable(assignedMemberId, day, timeIdx);
+                        const highlightClass = getDragHighlightClass(day, timeIdx);
 
-              {/* コントロール操作行 (同一ラインにフラット化) */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
-                {/* メイン調整 / メンバー設定 切り替えタブ */}
-                <div className="flex bg-slate-200 p-1 rounded-xl">
-                  <button
-                    onClick={() => setView('main')}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-extrabold text-base md:text-lg transition-all duration-150 ${
-                      view === 'main'
-                        ? 'bg-white text-indigo-700 shadow-sm'
-                        : 'text-slate-700 hover:text-slate-950'
-                    }`}
-                  >
-                    <Icon name="Calendar" className="w-5 h-5" />
-                    メイン調整表
-                  </button>
-                  <button
-                    onClick={() => setView('settings')}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-extrabold text-base md:text-lg transition-all duration-150 ${
-                      view === 'settings'
-                        ? 'bg-white text-indigo-700 shadow-sm'
-                        : 'text-slate-700 hover:text-slate-950'
-                    }`}
-                  >
-                    <Icon name="Users" className="w-5 h-5" />
-                    メンバー設定・登録
-                  </button>
-                </div>
+                        return h("td", {
+                          key: day,
+                          onDragOver: (e) => e.preventDefault(),
+                          onDrop: () => handleDrop(day, timeIdx),
+                          className: `p-2 border-b border-l border-slate-200 transition-all duration-150 h-32 relative ${highlightClass}`
+                        },
+                          h("div", { className: "w-full h-full flex flex-col justify-between rounded-xl group overflow-hidden" },
+                            assignedMember ? h("div", {
+                              draggable: true,
+                              onDragStart: () => handleDragStart(assignedMember.id, { type: 'grid', day, timeIndex: timeIdx }),
+                              className: `w-full h-full p-2 rounded-xl flex items-center justify-center relative cursor-grab active:cursor-grabbing shadow-sm border-2 transition-all ${hasError ? 'bg-rose-100 border-rose-500 text-rose-900 font-black' : 'bg-indigo-50 border-indigo-300 text-indigo-900 font-extrabold hover:bg-indigo-100'}`
+                            },
+                              h("div", { className: "w-full" }, renderSplitName(assignedMember.name)),
+                              h("div", { className: "absolute top-1 right-1 flex gap-1" },
+                                hasError && h("span", { className: "bg-rose-500 text-white p-0.5 rounded-full", title: "不可の時間帯に配置されています！" }, h(Icon, { name: "AlertCircle", className: "w-4 h-4" })),
+                                h("button", {
+                                  onClick: () => handleRemoveFromSchedule(day, timeIdx),
+                                  className: "text-slate-400 hover:text-rose-600 p-0.5 rounded-full hover:bg-white bg-white/70"
+                                }, h(Icon, { name: "X", className: "w-4 h-4" }))
+                              )
+                            ) : h("div", { className: "w-full h-full flex items-center justify-center border-2 border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/20 rounded-xl transition-colors" },
+                              h("span", { className: "text-sm md:text-base text-slate-300 font-bold" }, "空き")
+                            )
+                          )
+                        );
+                      })
+                    ))
+                  )
+                )
+              )
+            ),
+            // 右カラム名簿
+            h("div", { className: "lg:col-span-3 space-y-8" },
+              h("div", { className: "bg-indigo-50 border-2 border-indigo-200 p-6 rounded-3xl shadow-sm" },
+                h("h3", { className: "text-xl md:text-2xl font-black text-indigo-900 flex items-center gap-2 mb-2" }, h(Icon, { name: "HelpCircle", className: "w-6 h-6 text-indigo-700" }), "操作ガイド"),
+                h("ul", { className: "text-base md:text-lg text-indigo-950/90 space-y-2 list-disc pl-5 leading-relaxed font-bold" },
+                  h("li", {}, "新しく登録されたメンバーは、デフォルトですべて予定不可能（赤）になります。"),
+                  h("li", {}, "右上の「メンバー設定」タブで可能コマを選択してください。")
+                )
+              ),
+              h("div", { className: "bg-white rounded-3xl border-2 border-slate-200 shadow-md p-6" },
+                h("div", { className: "flex items-center justify-between mb-4 pb-3 border-b-2 border-slate-100" },
+                  h("h3", { className: "text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2" }, h(Icon, { name: "Users", className: "w-6 h-6 text-indigo-600" }), "メンバー名簿"),
+                  h("span", { className: "bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-base font-black" }, `${members.length}名`)
+                ),
+                h("div", { className: "mb-6" },
+                  h("h4", { className: "text-sm md:text-base font-black text-slate-400 uppercase tracking-wider mb-3" }, "未配置のメンバー"),
+                  getUnassignedMembers().length === 0 ? h("p", { className: "text-base text-slate-400 bg-slate-50 p-4 rounded-2xl border-2 border-dashed text-center font-bold" }, "全員配置完了 🎉") :
+                    h("div", { className: "space-y-3" },
+                      getUnassignedMembers().map(member => h("div", {
+                        key: member.id,
+                        draggable: true,
+                        onDragStart: () => handleDragStart(member.id, { type: 'list' }),
+                        className: "p-4 bg-white border-2 border-slate-200 text-slate-800 rounded-2xl hover:border-indigo-400 hover:shadow-md cursor-grab active:cursor-grabbing flex items-center justify-between group transition-all"
+                      },
+                        h("span", { className: "text-xl font-extrabold" }, member.name),
+                        h("span", { className: "text-sm text-indigo-500 font-bold group-hover:translate-x-1 transition-transform flex items-center" }, "配置する", h(Icon, { name: "ChevronRight", className: "w-4 h-4 ml-0.5" }))
+                      ))
+                    )
+                ),
+                h("div", {},
+                  h("h4", { className: "text-sm md:text-base font-black text-slate-400 uppercase tracking-wider mb-3" }, "配置済みのメンバー"),
+                  members.filter(m => !getUnassignedMembers().some(um => um.id === m.id)).length === 0 ? h("p", { className: "text-base text-slate-400 bg-slate-50 p-4 rounded-xl text-center font-bold" }, "まだ配置されていません。") :
+                    h("div", { className: "space-y-2 opacity-65" },
+                      members.filter(m => !getUnassignedMembers().some(um => um.id === m.id)).map(member => h("div", { key: member.id, className: "p-3 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl flex items-center justify-between" },
+                        h("span", { className: "text-lg font-bold" }, member.name),
+                        h("span", { className: "text-sm text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-lg font-black" }, "配置済")
+                      ))
+                    )
+                )
+              ),
+              draggingMemberId && dragSource?.type === 'grid' && h("div", {
+                onDragOver: (e) => e.preventDefault(),
+                onDrop: () => handleRemoveFromSchedule(dragSource.day, dragSource.timeIndex),
+                className: "bg-rose-50 border-4 border-dashed border-rose-300 p-8 rounded-3xl flex flex-col items-center justify-center gap-3 text-rose-700 shadow-md"
+              }, h(Icon, { name: "Trash2", className: "w-10 h-10 text-rose-500" }), h("span", { className: "text-lg font-black" }, "ここに落として配置解除"))
+            )
+          ),
+          view === 'settings' && h("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in" },
+            // コピペ & 名簿
+            h("div", { className: "lg:col-span-4 space-y-6" },
+              h("div", { className: "bg-white rounded-3xl border-2 border-slate-200 shadow-lg p-6" },
+                h("h3", { className: "text-xl md:text-2xl font-black text-slate-900 flex items-center gap-2 pb-3 border-b-2 border-slate-100 mb-4" }, h(Icon, { name: "ClipboardList", className: "w-6 h-6 text-indigo-600" }), "コピペで一括メンバー登録"),
+                h("form", { onSubmit: handleBulkAddMembers, className: "space-y-4" },
+                  h("div", {},
+                    h("label", { className: "block text-base font-black text-slate-700 mb-2" }, "名前リスト（1行に1人ずつ、または読点区切り）"),
+                    h("textarea", {
+                      rows: "4",
+                      placeholder: "小松 太郎\n宮崎 花子\n日向 一郎",
+                      value: bulkNamesInput,
+                      onChange: (e) => setBulkNamesInput(e.target.value),
+                      className: "w-full px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all font-bold"
+                    })
+                  ),
+                  h("button", { type: "submit", className: "w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl text-lg transition-colors flex items-center justify-center gap-2 shadow-lg" }, h(Icon, { name: "UserPlus", className: "w-5 h-5" }), "上記の名前を一括追加する")
+                )
+              ),
+              h("div", { className: "bg-white rounded-3xl border-2 border-slate-200 shadow-lg p-6" },
+                h("h3", { className: "text-xl md:text-2xl font-black text-slate-900 mb-4" }, "個別登録と選択"),
+                h("form", { onSubmit: handleAddMember, className: "mb-4 flex gap-2" },
+                  h("input", {
+                    type: "text",
+                    placeholder: "氏名を入力...",
+                    value: newMemberName,
+                    onChange: (e) => setNewMemberName(e.target.value),
+                    className: "flex-1 px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 font-bold"
+                  }),
+                  h("button", { type: "submit", className: "px-5 py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl text-base transition-colors" }, "追加")
+                ),
+                h("div", { className: "space-y-2 max-h-[380px] overflow-y-auto pr-1" },
+                  members.map(member => h("div", {
+                    key: member.id,
+                    onClick: () => setSelectedMemberId(member.id),
+                    className: `p-4 rounded-2xl cursor-pointer transition-all flex items-center justify-between border-2 ${selectedMemberId === member.id ? 'bg-indigo-50 border-indigo-500 text-indigo-900 font-black' : 'bg-white border-transparent text-slate-700 hover:bg-slate-50'}`
+                  },
+                    h("span", { className: "text-xl truncate" }, member.name),
+                    h("div", { className: "flex items-center gap-2" },
+                      Object.values(schedule).includes(member.id) && h("span", { className: "bg-indigo-100 text-indigo-800 text-sm px-2 py-0.5 rounded-lg font-black" }, "配置中"),
+                      h("button", {
+                        onClick: (e) => { e.stopPropagation(); handleDeleteMember(member.id, member.name); },
+                        className: "text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-white"
+                      }, h(Icon, { name: "Trash2", className: "w-5 h-5" }))
+                    )
+                  ))
+                )
+              )
+            ),
+            // 希望日程四角形選択
+            h("div", { className: "lg:col-span-8 bg-white rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden" },
+              selectedMemberId ? (() => {
+                const currentMember = members.find(m => m.id === selectedMemberId);
+                if (!currentMember) return null;
 
-                {/* その他の操作ボタン群 (軸の設定、全リセット) を並列配置 */}
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setView('axis-config')}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-base border-2 transition-all ${
-                      view === 'axis-config'
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Icon name="Settings" className="w-5 h-5 text-indigo-600" />
-                    軸の設定
-                  </button>
-                  
-                  <button
-                    onClick={handleResetAll}
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-rose-50 border-2 border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-base transition-colors"
-                  >
-                    <Icon name="RotateCcw" className="w-5 h-5" />
-                    全リセット
-                  </button>
-                </div>
-              </div>
+                return h("div", {},
+                  h("div", { className: "p-6 bg-indigo-50/70 border-b-2 border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6" },
+                    h("div", {},
+                      h("span", { className: "text-sm font-black text-indigo-700 uppercase tracking-widest block" }, "MEMBER AVAILABILITY"),
+                      h("h3", { className: "text-3xl font-black text-slate-900 mt-1" }, `${currentMember.name} の面談希望設定`)
+                    ),
+                    h("div", { className: "flex gap-2" },
+                      h("button", { onClick: () => setAllAvailability(1), className: "px-4 py-2.5 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-base font-bold flex items-center gap-1" }, h(Icon, { name: "Check", className: "w-5 h-5 text-emerald-600" }), "すべて可能"),
+                      h("button", { onClick: () => setAllAvailability(0), className: "px-4 py-2.5 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-base font-bold flex items-center gap-1" }, h(Icon, { name: "X", className: "w-5 h-5 text-rose-600" }), "すべて不可")
+                    )
+                  ),
+                  h("div", { className: "p-5 bg-amber-50 border-b-2 border-amber-200 text-base md:text-lg text-amber-900 font-bold flex items-start gap-2.5" },
+                    h(Icon, { name: "HelpCircle", className: "w-6 h-6 text-amber-700 flex-shrink-0 mt-0.5" }),
+                    h("div", {},
+                      h("strong", {}, "四角形でドラッグ範囲選択："),
+                      "セルを", h("b", {}, "クリックしたまま対角線にドラッグ"), "するとExcelのように四角い枠を一斉に変更できます。ドラッグ中もリアルタイムにプレビューされます。"
+                    )
+                  ),
+                  h("div", { className: "p-4 bg-slate-50 border-b-2 border-slate-100 flex gap-6 text-lg font-bold justify-center" },
+                    h("div", { className: "flex items-center gap-2" }, h("div", { className: "w-5 h-5 rounded bg-emerald-500" }), h("span", {}, "面談可能（緑）")),
+                    h("div", { className: "flex items-center gap-2" }, h("div", { className: "w-5 h-5 rounded bg-rose-100 border-2 border-rose-300" }), h("span", {}, "面談不可（赤）"))
+                  ),
+                  h("div", { className: "overflow-x-auto" },
+                    h("table", { className: "w-full min-w-[850px] border-collapse table-fixed select-none" },
+                      h("thead", {},
+                        h("tr", { className: "bg-slate-100" },
+                          h("th", { className: "w-[18%] p-4 text-center text-base font-black text-slate-500 border-b-2 border-slate-200" }, "時間帯"),
+                          days.map(day => h("th", { key: day, className: "p-4 text-center text-xl font-black text-slate-800 border-b-2 border-slate-200 border-l border-slate-200/80" }, day))
+                        )
+                      ),
+                      h("tbody", {},
+                        timeSlots.map((timeSlot, timeIdx) => h("tr", { key: timeSlot, className: "hover:bg-slate-50/30" },
+                          h("td", { className: "p-4 text-center border-b border-slate-100 bg-slate-50/20 font-bold" }, timeSlot),
+                          days.map((day, dayIdx) => {
+                            const isAvail = isAvailable(currentMember.id, day, timeIdx);
+                            const isBeingPainted = isInPaintRange(dayIdx, timeIdx);
 
-            </div>
-          </header>
+                            let bgClass = '';
+                            let textText = '';
+                            let iconElement = null;
 
-          {/* --- トーストメッセージ --- */}
-          {toast && (
-            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border-2 animate-bounce text-lg font-bold bg-white text-slate-900 border-slate-300">
-              <div className={`p-2 rounded-xl ${
-                toast.type === 'success' ? 'bg-emerald-100 text-emerald-800' :
-                toast.type === 'warning' ? 'bg-amber-100 text-amber-800' :
-                'bg-indigo-100 text-indigo-800'
-              }`}>
-                {toast.type === 'success' && <Icon name="Check" className="w-6 h-6" />}
-                {toast.type === 'warning' && <Icon name="AlertCircle" className="w-6 h-6" />}
-                {toast.type !== 'success' && toast.type !== 'warning' && <Icon name="Users" className="w-6 h-6" />}
-              </div>
-              <div>{toast.message}</div>
-              <button onClick={() => setToast(null)} className="text-slate-400 hover:text-slate-700 ml-4">
-                <Icon name="X" className="w-6 h-6" />
-              </button>
-            </div>
-          )}
+                            if (isBeingPainted) {
+                              if (paintValue === 1) {
+                                bgClass = 'bg-emerald-400 text-white border-emerald-500 scale-102 ring-4 ring-emerald-200';
+                                textText = '可能にする';
+                                iconElement = h(Icon, { name: "Check", className: "w-6 h-6 animate-pulse" });
+                              } else {
+                                bgClass = 'bg-rose-400 text-white border-rose-500 scale-98 ring-4 ring-rose-200';
+                                textText = '不可にする';
+                                iconElement = h(Icon, { name: "X", className: "w-5 h-5 animate-pulse" });
+                              }
+                            } else {
+                              if (isAvail) {
+                                bgClass = 'bg-emerald-500 text-white border-emerald-600 shadow-sm';
+                                textText = '可能';
+                                iconElement = h(Icon, { name: "Check", className: "w-6 h-6 font-black" });
+                              } else {
+                                bgClass = 'bg-rose-50 hover:bg-rose-100 text-rose-500 border-rose-200';
+                                textText = '不可';
+                                iconElement = h(Icon, { name: "X", className: "w-5 h-5 text-rose-300 font-bold" });
+                              }
+                            }
 
-          {/* --- カスタム確認モーダル --- */}
-          {confirmModal.isOpen && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-6 z-50 animate-fade-in">
-              <div className="bg-white rounded-3xl p-8 max-w-xl w-full border-2 border-slate-300 shadow-2xl animate-scale-up">
-                <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 flex items-center gap-2">
-                  <Icon name="AlertCircle" className="w-8 h-8 text-rose-600" />
-                  {confirmModal.title}
-                </h3>
-                <p className="mt-4 text-lg md:text-xl text-slate-700 leading-relaxed whitespace-pre-wrap">
-                  {confirmModal.message}
-                </p>
-                <div className="mt-8 flex gap-4">
-                  <button
-                    onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                    className="flex-1 py-4 bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold rounded-2xl text-lg transition-colors"
-                  >
-                    キャンセル
-                  </button>
-                  <button
-                    onClick={confirmModal.onConfirm}
-                    className="flex-1 py-4 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-2xl text-lg transition-colors shadow-lg shadow-rose-200"
-                  >
-                    実行する
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- メインコンテンツ (横幅を1600pxスケールに拡張) --- */}
-          <main className="flex-1 max-w-[95%] xl:max-w-[1600px] w-full mx-auto p-4 md:p-6">
-            
-            {/* --- ビュー1: メイン調整画面 --- */}
-            {view === 'main' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                {/* 左側：2次元スケジュール表 */}
-                <div className="lg:col-span-9 bg-white rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden">
-                  
-                  <div className="p-6 bg-slate-50 border-b-2 border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <Icon name="Calendar" className="w-7 h-7 text-indigo-600" />
-                        日程割り当てグリッド
-                      </h2>
-                      <p className="text-base md:text-lg text-slate-600 mt-1 font-semibold">
-                        名簿から名前をドラッグして配置してください。ドラッグ中、希望内は<span className="text-emerald-600 font-bold">緑色</span>、希望外は<span className="text-rose-600 font-bold">赤色</span>に変化します。
-                      </p>
-                    </div>
-                    
-                    <div className="flex gap-4 w-full md:w-auto">
-                      <button
-                        onClick={handleAutoSchedule}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl text-lg font-black hover:from-indigo-700 hover:to-violet-700 shadow-md shadow-indigo-200 transition-all active:scale-95"
-                      >
-                        <Icon name="Sparkles" className="w-5 h-5" />
-                        AI自動日程調整
-                      </button>
-                      <button
-                        onClick={handleClearSchedule}
-                        className="px-5 py-4 border-2 border-slate-300 text-slate-700 hover:bg-slate-100 rounded-2xl text-base md:text-lg font-extrabold transition-colors"
-                      >
-                        表をクリア
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 2次元表テーブル (最低幅を1050pxに拡張し、列が潰れるのを完全防止) */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1050px] border-collapse table-fixed">
-                      <thead>
-                        <tr className="bg-slate-200/60">
-                          <th className="w-[12%] p-4 text-center text-sm md:text-base font-black text-slate-600 border-b-2 border-slate-300">
-                            時間 / 日程
-                          </th>
-                          {days.map(day => (
-                            <th key={day} className="w-[14.6%] p-4 text-center text-xl md:text-2xl font-black text-slate-800 border-b-2 border-slate-300 border-l border-slate-200">
-                              {day}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {timeSlots.map((timeSlot, timeIdx) => (
-                          <tr key={timeSlot} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="p-4 text-center border-b border-slate-200 bg-slate-50/30">
-                              <div className="flex flex-col items-center justify-center gap-1">
-                                <Icon name="Clock" className="w-5 h-5 text-slate-400" />
-                                <span className="text-sm md:text-base font-bold text-slate-700">{timeSlot}</span>
-                              </div>
-                            </td>
-
-                            {days.map(day => {
-                              const slotKey = `${day}-${timeIdx}`;
-                              const assignedMemberId = schedule[slotKey];
-                              const assignedMember = members.find(m => m.id === assignedMemberId);
-                              
-                              // 配置エラー判定 (デフォルトはすべて不可能なので、希望可能（緑）かを確認)
-                              const hasError = assignedMemberId && !isAvailable(assignedMemberId, day, timeIdx);
-                              const highlightClass = getDragHighlightClass(day, timeIdx);
-
-                              return (
-                                <td
-                                  key={day}
-                                  onDragOver={handleDragOver}
-                                  onDrop={() => handleDrop(day, timeIdx)}
-                                  className={`p-2 border-b border-l border-slate-200 transition-all duration-150 h-32 relative ${highlightClass}`}
-                                >
-                                  <div className="w-full h-full flex flex-col justify-between rounded-xl group overflow-hidden">
-                                    {assignedMember ? (
-                                      <div
-                                        draggable
-                                        onDragStart={() => handleDragStart(assignedMember.id, { type: 'grid', day, timeIndex: timeIdx })}
-                                        className={`w-full h-full p-2 rounded-xl flex items-center justify-center relative cursor-grab active:cursor-grabbing shadow-sm border-2 transition-all ${
-                                          hasError 
-                                            ? 'bg-rose-100 border-rose-500 text-rose-900 font-black animate-pulse' 
-                                            : 'bg-indigo-50 border-indigo-300 text-indigo-900 font-extrabold hover:bg-indigo-100'
-                                        }`}
-                                      >
-                                        {/* 姓と名を2行で表示して名前切れを防止 */}
-                                        <div className="w-full">
-                                          {renderSplitName(assignedMember.name)}
-                                        </div>
-                                        
-                                        {/* 右上にエラー警告、または削除ボタン */}
-                                        <div className="absolute top-1 right-1 flex gap-1">
-                                          {hasError && (
-                                            <span className="bg-rose-500 text-white p-0.5 rounded-full" title="希望外の時間帯です！">
-                                              <Icon name="AlertCircle" className="w-4 h-4" />
-                                            </span>
-                                          )}
-                                          <button
-                                            onClick={() => handleRemoveFromSchedule(day, timeIdx)}
-                                            className="text-slate-400 hover:text-rose-600 p-0.5 rounded-full hover:bg-white bg-white/70"
-                                            title="配置から外す"
-                                          >
-                                            <Icon name="X" className="w-4 h-4" />
-                                          </button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/20 rounded-xl transition-colors">
-                                        <span className="text-sm md:text-base text-slate-300 group-hover:text-indigo-400 transition-colors font-bold">
-                                          空き
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* 右側：名簿カラム */}
-                <div className="lg:col-span-3 space-y-8">
-                  
-                  <div className="bg-indigo-50 border-2 border-indigo-200 p-6 rounded-3xl shadow-sm">
-                    <h3 className="text-xl md:text-2xl font-black text-indigo-900 flex items-center gap-2 mb-2">
-                      <Icon name="HelpCircle" className="w-6 h-6 text-indigo-700" />
-                      操作のポイント
-                    </h3>
-                    <ul className="text-base md:text-lg text-indigo-950/90 space-y-2 list-disc pl-5 leading-relaxed font-bold">
-                      <li>新規登録されたメンバーは初期状態で「すべて日程不可能」になっています。設定画面で面談可能日程を登録してください。</li>
-                      <li>個別日程の設定画面では、一コマずつでなくドラッグで「四角形」の範囲を一気に選択できます。</li>
-                    </ul>
-                  </div>
-
-                  {/* 名簿リスト */}
-                  <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-md p-6">
-                    <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-slate-100">
-                      <h3 className="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
-                        <Icon name="Users" className="w-6 h-6 text-indigo-600" />
-                        メンバー名簿
-                      </h3>
-                      <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-base font-black">
-                        {members.length}名
-                      </span>
-                    </div>
-
-                    {/* 未配置メンバー */}
-                    <div className="mb-6">
-                      <h4 className="text-sm md:text-base font-black text-slate-400 uppercase tracking-wider mb-3">
-                        未配置のメンバー
-                      </h4>
-                      
-                      {getUnassignedMembers().length === 0 ? (
-                        <p className="text-base text-slate-400 bg-slate-50 p-4 rounded-2xl border-2 border-dashed text-center font-bold">
-                          全員が配置されました 🎉
-                        </p>
-                      ) : (
-                        <div className="space-y-3">
-                          {getUnassignedMembers().map(member => (
-                            <div
-                              key={member.id}
-                              draggable
-                              onDragStart={() => handleDragStart(member.id, { type: 'list' })}
-                              className="p-4 bg-white border-2 border-slate-200 text-slate-800 rounded-2xl hover:border-indigo-400 hover:shadow-md cursor-grab active:cursor-grabbing flex items-center justify-between group transition-all"
-                            >
-                              <span className="text-xl font-extrabold">{member.name}</span>
-                              <span className="text-sm text-indigo-500 font-bold group-hover:translate-x-1 transition-transform flex items-center">
-                                配置する
-                                <Icon name="ChevronRight" className="w-4 h-4 ml-0.5" />
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 配置済みメンバー */}
-                    <div>
-                      <h4 className="text-sm md:text-base font-black text-slate-400 uppercase tracking-wider mb-3">
-                        配置済みのメンバー
-                      </h4>
-                      
-                      {members.filter(m => !getUnassignedMembers().some(um => um.id === m.id)).length === 0 ? (
-                        <p className="text-base text-slate-400 bg-slate-50 p-4 rounded-xl text-center font-bold">
-                          まだ割り当てはありません。
-                        </p>
-                      ) : (
-                        <div className="space-y-2 opacity-65">
-                          {members
-                            .filter(m => !getUnassignedMembers().some(um => um.id === m.id))
-                            .map(member => (
-                              <div
-                                key={member.id}
-                                className="p-3 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl flex items-center justify-between"
-                              >
-                                <span className="text-lg font-bold">{member.name}</span>
-                                <span className="text-sm text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-lg font-black">
-                                  配置済
-                                </span>
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-
-                  {/* ドラッグアウト（ごみ箱） */}
-                  {draggingMemberId && dragSource?.type === 'grid' && (
-                    <div 
-                      onDragOver={handleDragOver}
-                      onDrop={() => handleRemoveFromSchedule(dragSource.day, dragSource.timeIndex)}
-                      className="bg-rose-50 border-4 border-dashed border-rose-300 p-8 rounded-3xl flex flex-col items-center justify-center gap-3 text-rose-700 animate-pulse transition-all shadow-md"
-                    >
-                      <Icon name="Trash2" className="w-10 h-10 text-rose-500" />
-                      <span className="text-lg font-black">ここにドロップして配置解除</span>
-                    </div>
-                  )}
-
-                </div>
-
-              </div>
-            )}
-
-            {/* --- ビュー2: 設定画面 (一括登録・四角形範囲選択) --- */}
-            {view === 'settings' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
-                
-                {/* 左側：メンバーリスト ＆ 一括登録フォーム */}
-                <div className="lg:col-span-4 space-y-6">
-                  
-                  {/* 一括登録エリア */}
-                  <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-lg p-6">
-                    <h3 className="text-xl md:text-2xl font-black text-slate-900 flex items-center gap-2 pb-3 border-b-2 border-slate-100 mb-4">
-                      <Icon name="ClipboardList" className="w-6 h-6 text-indigo-600" />
-                      コピペで一括メンバー登録
-                    </h3>
-                    
-                    <form onSubmit={handleBulkAddMembers} className="space-y-4">
-                      <div>
-                        <label className="block text-base font-black text-slate-700 mb-2">
-                          名前リスト（1行に1人、またはカンマ区切り）
-                        </label>
-                        <textarea
-                          rows="4"
-                          placeholder="佐藤 健太&#10;鈴木 芽衣&#10;高橋 蓮"
-                          value={bulkNamesInput}
-                          onChange={(e) => setBulkNamesInput(e.target.value)}
-                          className="w-full px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all font-bold"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl text-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
-                      >
-                        <Icon name="UserPlus" className="w-5 h-5" />
-                        上記の名前を一括追加する
-                      </button>
-                    </form>
-                  </div>
-
-                  {/* 個別追加 ＆ メンバー選択リスト */}
-                  <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-lg p-6">
-                    <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-4">
-                      登録済みメンバー
-                    </h3>
-                    
-                    {/* 1人ずつ登録 */}
-                    <form onSubmit={handleAddMember} className="mb-4 flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="氏名を入力..."
-                        value={newMemberName}
-                        onChange={(e) => setNewMemberName(e.target.value)}
-                        className="flex-1 px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 font-bold"
-                      />
-                      <button
-                        type="submit"
-                        className="px-5 py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl text-base transition-colors flex items-center gap-1"
-                      >
-                        追加
-                      </button>
-                    </form>
-
-                    {/* メンバー一覧スクロール */}
-                    <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-                      {members.map(member => (
-                        <div
-                          key={member.id}
-                          onClick={() => setSelectedMemberId(member.id)}
-                          className={`p-4 rounded-2xl cursor-pointer transition-all flex items-center justify-between border-2 ${
-                            selectedMemberId === member.id
-                              ? 'bg-indigo-50 border-indigo-500 text-indigo-900 font-black shadow-xs'
-                              : 'bg-white border-transparent text-slate-700 hover:bg-slate-50 hover:text-slate-900'
-                          }`}
-                        >
-                          <span className="text-xl truncate">{member.name}</span>
-                          
-                          <div className="flex items-center gap-2">
-                            {Object.values(schedule).includes(member.id) && (
-                              <span className="bg-indigo-100 text-indigo-800 text-sm px-2 py-0.5 rounded-lg font-black">
-                                配置中
-                              </span>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteMember(member.id, member.name);
-                              }}
-                              className="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-white transition-colors"
-                              title="削除"
-                            >
-                              <Icon name="Trash2" className="w-5 h-5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-
-                      {members.length === 0 && (
-                        <p className="text-center py-8 text-slate-400 font-bold">
-                          メンバーがまだ登録されていません。
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* 右側：希望日程ドラッグ【四角形】範囲選択テーブル */}
-                <div className="lg:col-span-8 bg-white rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden">
-                  {selectedMemberId ? (
-                    (() => {
-                      const currentMember = members.find(m => m.id === selectedMemberId);
-                      if (!currentMember) return null;
-
-                      return (
-                        <div>
-                          {/* メンバー別設定ヘッダー */}
-                          <div className="p-6 bg-indigo-50/70 border-b-2 border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                            <div>
-                              <span className="text-sm font-black text-indigo-700 uppercase tracking-widest block">
-                                MEMBER AVAILABILITY
-                              </span>
-                              <h3 className="text-3xl font-black text-slate-900 mt-1">
-                                {currentMember.name} の面談可能日程設定
-                              </h3>
-                            </div>
-
-                            {/* 一括変更 */}
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => setAllAvailability(1)}
-                                className="px-4 py-2.5 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-base font-bold transition-colors flex items-center gap-1"
-                              >
-                                <Icon name="Check" className="w-5 h-5" />
-                                すべて「可能」
-                              </button>
-                              <button
-                                onClick={() => setAllAvailability(0)}
-                                className="px-4 py-2.5 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-base font-bold transition-colors flex items-center gap-1"
-                              >
-                                <Icon name="X" className="w-5 h-5" />
-                                すべて「不可」
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* 四角形ドラッグ操作解説 */}
-                          <div className="p-5 bg-amber-50 border-b-2 border-amber-200 text-base md:text-lg text-amber-900 font-bold flex items-start gap-2.5">
-                            <Icon name="HelpCircle" className="w-6 h-6 text-amber-700 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <strong>四角形ドラッグ選択に対応：</strong>
-                              カレンダーを<b>クリックしたまま対角線上にドラッグ</b>することで、Excelのように「四角形の範囲」をまとめて一気可能・不可能に選択できます。
-                              <br />（ドラッグ中のエリアは明るくハイライトプレビューされます）
-                            </div>
-                          </div>
-
-                          {/* 選択状況凡例 */}
-                          <div className="p-4 bg-slate-50 border-b-2 border-slate-100 flex gap-6 text-lg font-bold justify-center">
-                            <div className="flex items-center gap-2">
-                              <div className="w-5 h-5 rounded bg-emerald-500"></div>
-                              <span>面談可能（グリーン）</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-5 h-5 rounded bg-rose-100 border-2 border-rose-300"></div>
-                              <span>面談不可（レッド）</span>
-                            </div>
-                          </div>
-
-                          {/* 範囲選択テーブル (横幅は最低でも850pxを担保して崩れを排除) */}
-                          <div className="overflow-x-auto">
-                            <table className="w-full min-w-[850px] border-collapse table-fixed select-none">
-                              <thead>
-                                <tr className="bg-slate-100">
-                                  <th className="w-[18%] p-4 text-center text-base font-black text-slate-500 border-b-2 border-slate-200">
-                                    時間帯
-                                  </th>
-                                  {days.map(day => (
-                                    <th key={day} className="p-4 text-center text-xl font-black text-slate-800 border-b-2 border-slate-200 border-l border-slate-200/80">
-                                      {day}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {timeSlots.map((timeSlot, timeIdx) => (
-                                  <tr key={timeSlot} className="hover:bg-slate-50/30">
-                                    <td className="p-4 text-center border-b border-slate-100 bg-slate-50/20 font-bold">
-                                      {timeSlot}
-                                    </td>
-
-                                    {days.map((day, dayIdx) => {
-                                      const isAvail = isAvailable(currentMember.id, day, timeIdx);
-                                      
-                                      // このセルが今まさにドラッグ四角形の選択範囲内にあるか
-                                      const isBeingPainted = isInPaintRange(dayIdx, timeIdx);
-                                      
-                                      // プレビュー表示カラーを決定
-                                      let bgClass = '';
-                                      let textText = '';
-                                      let iconElement = null;
-
-                                      if (isBeingPainted) {
-                                        // 現在ドラッグ選択範囲内のプレビュー表示
-                                        if (paintValue === 1) {
-                                          bgClass = 'bg-emerald-400 text-white border-emerald-500 scale-102 ring-4 ring-emerald-200';
-                                          textText = '可能に設定';
-                                          iconElement = <Icon name="Check" className="w-6 h-6 animate-pulse" />;
-                                        } else {
-                                          bgClass = 'bg-rose-400 text-white border-rose-500 scale-98 ring-4 ring-rose-200';
-                                          textText = '不可に設定';
-                                          iconElement = <Icon name="X" className="w-5 h-5 animate-pulse" />;
-                                        }
-                                      } else {
-                                        // 通常時（確定済みの表示）
-                                        if (isAvail) {
-                                          bgClass = 'bg-emerald-500 text-white border-emerald-600 shadow-sm';
-                                          textText = '可能';
-                                          iconElement = <Icon name="Check" className="w-6 h-6 font-black" />;
-                                        } else {
-                                          bgClass = 'bg-rose-50 hover:bg-rose-100 text-rose-500 border-rose-200';
-                                          textText = '不可';
-                                          iconElement = <Icon name="X" className="w-5 h-5 text-rose-300 font-bold" />;
-                                        }
-                                      }
-
-                                      return (
-                                        <td
-                                          key={day}
-                                          onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            handlePaintStart(dayIdx, timeIdx, isAvail ? 1 : 0);
-                                          }}
-                                          onMouseEnter={() => handlePaintEnter(dayIdx, timeIdx)}
-                                          className="p-1.5 border-b border-l border-slate-200 h-20 cursor-pointer"
-                                        >
-                                          <div
-                                            className={`w-full h-full rounded-2xl flex flex-col items-center justify-center gap-1 border-2 transition-all ${bgClass}`}
-                                          >
-                                            {iconElement}
-                                            <span className="text-sm font-black">{textText}</span>
-                                          </div>
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="p-6 bg-slate-50 border-t-2 border-slate-150 text-center">
-                            <button
-                              onClick={() => setView('main')}
-                              className="px-8 py-4 bg-slate-900 hover:bg-slate-950 text-white font-black rounded-2xl text-lg transition-colors shadow-lg flex items-center gap-2 mx-auto"
-                            >
-                              <Icon name="Calendar" className="w-5 h-5" />
-                              メイン調整表に戻る
-                            </button>
-                          </div>
-
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    <div className="p-16 text-center text-slate-400 font-bold">
-                      <Icon name="Users" className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                      左の名簿からメンバーを選択して、希望スケジュールを設定してください。
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            )}
-
-            {/* --- ビュー3: 軸（縦軸・横軸）の動的編集画面 --- */}
-            {view === 'axis-config' && (
-              <div className="max-w-3xl mx-auto bg-white rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden animate-fade-in">
-                <div className="p-6 bg-indigo-50/70 border-b-2 border-slate-200">
-                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-2.5">
-                    <Icon name="Settings" className="w-7 h-7 text-indigo-600" />
-                    スケジュール表の軸カスタム
-                  </h2>
-                  <p className="text-base text-slate-600 font-bold mt-1">
-                    調整表の日付・曜日（横軸）と時間帯枠（縦軸）を柔軟に変更できます。
-                  </p>
-                </div>
-
-                <form onSubmit={handleSaveAxisConfig} className="p-6 space-y-6">
-                  <div>
-                    <label className="block text-lg font-black text-slate-700 mb-2">
-                      横軸：日程・日付・曜日（カンマ「,」またはスペースで区切ってください）
-                    </label>
-                    <input
-                      type="text"
-                      value={daysInput}
-                      onChange={(e) => setDaysInput(e.target.value)}
-                      className="w-full px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 font-bold"
-                      placeholder="月, 火, 水, 木, 金"
-                    />
-                    <p className="text-sm text-slate-400 font-bold mt-1">
-                      例: 「24日(金), 27日(月), 28日(火)」のように指定できます。
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-lg font-black text-slate-700 mb-2">
-                      縦軸：時間枠スロット（1行に1時間枠を入力してください）
-                    </label>
-                    <textarea
-                      rows="6"
-                      value={timeSlotsInput}
-                      onChange={(e) => setTimeSlotsInput(e.target.value)}
-                      className="w-full px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 font-bold"
-                      placeholder="13:10 - 13:25&#10;13:35 - 13:50"
-                    />
-                    <p className="text-sm text-slate-400 font-bold mt-1">
-                      ※軸を変更しても、名簿データは保持されます。
-                    </p>
-                  </div>
-
-                  <div className="flex gap-4 pt-4 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={() => setView('main')}
-                      className="flex-1 py-4 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-2xl text-lg transition-colors"
-                    >
-                      キャンセルして戻る
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl text-lg transition-colors shadow-lg"
-                    >
-                      軸の変更を適用する
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-          </main>
-
-          {/* --- フッター --- */}
-          <footer className="bg-white border-t-2 border-slate-200 py-8 mt-12 text-center text-sm md:text-base text-slate-500 font-bold">
-            <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-              <p>© 2026 小松台小R8個人面談調整アプリ - GitHub公開対応プロダクト</p>
-              <div className="flex gap-4">
-                <span>データ自動セーブ保存: 有効</span>
-                <span>|</span>
-                <span>高コントラストユニバーサル表示</span>
-              </div>
-            </div>
-          </footer>
-        </div>
+                            return h("td", {
+                              key: day,
+                              onMouseDown: (e) => { e.preventDefault(); handlePaintStart(dayIdx, timeIdx, isAvail ? 1 : 0); },
+                              onMouseEnter: () => handlePaintEnter(dayIdx, timeIdx),
+                              className: "p-1.5 border-b border-l border-slate-200 h-20 cursor-pointer"
+                            },
+                              h("div", { className: `w-full h-full rounded-2xl flex flex-col items-center justify-center gap-1 border-2 transition-all ${bgClass}` },
+                                iconElement,
+                                h("span", { className: "text-sm font-black" }, textText)
+                              )
+                            );
+                          })
+                        ))
+                      )
+                    )
+                  ),
+                  h("div", { className: "p-6 bg-slate-50 border-t-2 border-slate-150 text-center" },
+                    h("button", { onClick: () => setView('main'), className: "px-8 py-4 bg-slate-900 hover:bg-slate-950 text-white font-black rounded-2xl text-lg shadow-lg flex items-center gap-2 mx-auto" }, h(Icon, { name: "Calendar", className: "w-5 h-5" }), "メイン調整表に戻る")
+                  )
+                );
+              })() : h("div", { className: "p-16 text-center text-slate-400 font-bold" }, h(Icon, { name: "Users", className: "w-16 h-16 text-slate-300 mx-auto mb-4" }), "左の名簿からメンバーを選択して、希望スケジュールを設定してください。")
+            )
+          ),
+          view === 'axis-config' && h("div", { className: "max-w-3xl mx-auto bg-white rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden animate-fade-in" },
+            h("div", { className: "p-6 bg-indigo-50/70 border-b-2 border-slate-200" },
+              h("h2", { className: "text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-2.5" }, h(Icon, { name: "Settings", className: "w-7 h-7 text-indigo-600" }), "縦軸・横軸のカスタマイズ"),
+              h("p", { className: "text-base text-slate-600 font-bold mt-1" }, "表の日程（横軸）と時間帯枠（縦軸）を柔軟に変更できます。")
+            ),
+            h("form", { onSubmit: handleSaveAxisConfig, className: "p-6 space-y-6" },
+              h("div", {},
+                h("label", { className: "block text-lg font-black text-slate-700 mb-2" }, "横軸：日程・日付・曜日（カンマ「,」で区切ってください）"),
+                h("input", {
+                  type: "text",
+                  value: daysInput,
+                  onChange: (e) => setDaysInput(e.target.value),
+                  className: "w-full px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 font-bold"
+                }),
+                h("p", { className: "text-sm text-slate-400 font-bold mt-1" }, "例: 24日(金), 27日(月), 28日(火)")
+              ),
+              h("div", {},
+                h("label", { className: "block text-lg font-black text-slate-700 mb-2" }, "縦軸：時間枠スロット（1行に1コマ分入力してください）"),
+                h("textarea", {
+                  rows: "6",
+                  value: timeSlotsInput,
+                  onChange: (e) => setTimeSlotsInput(e.target.value),
+                  className: "w-full px-4 py-3 text-lg bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 font-bold"
+                })
+              ),
+              h("div", { className: "flex gap-4 pt-4 border-t border-slate-100" },
+                h("button", { type: "button", onClick: () => setView('main'), className: "flex-1 py-4 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-2xl text-lg transition-colors" }, "キャンセル"),
+                h("button", { type: "submit", className: "flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl text-lg transition-colors shadow-lg" }, "変更を適用する")
+              )
+            )
+          )
+        ),
+        // フッター
+        h("footer", { className: "bg-white border-t-2 border-slate-200 py-8 mt-12 text-center text-sm md:text-base text-slate-500 font-bold animate-fade-in" },
+          h("div", { className: "max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4" },
+            h("p", {}, "© 2026 小松台小R8個人面談調整アプリ - GitHub公開対応プロダクト"),
+            h("div", { className: "flex gap-4" },
+              h("span", {}, "データ自動セーブ保存: 有効"),
+              h("span", {}, "|"),
+              h("span", {}, "ユニバーサル特大表示デザイン")
+            )
+          )
+        )
       );
     }
 
@@ -1408,7 +882,7 @@
         const rootElement = document.getElementById('root');
         if (rootElement) {
           const root = ReactDOM.createRoot(rootElement);
-          root.render(<App />);
+          root.render(h(App));
         }
       } catch (err) {
         console.error("Reactのマウント中にエラーが発生しました:", err);
